@@ -61,11 +61,14 @@ export default function PublishVehicle() {
     if (!cardRef.current) return;
     setCopyingImage(true);
     try {
-      const blob = await htmlToImage.toBlob(cardRef.current, {
-        backgroundColor: '#ffffff',
+      // Usar un canvasOffet/dimensiones fijas para evitar el cropping
+      const element = cardRef.current;
+      const blob = await htmlToImage.toBlob(element, {
+        pixelRatio: 2, // Mejor calidad
         style: {
           transform: 'scale(1)',
-          borderRadius: '24px',
+          transformOrigin: 'top left',
+          margin: '0',
         }
       });
       if (blob) {
@@ -132,7 +135,7 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
 
 ☎️ ➕️5️⃣6️⃣9️⃣6️⃣3️⃣6️⃣2️⃣2️⃣8️⃣1️⃣2️⃣`;
 
-  const StatusRow = ({ icon, name, hasLink, color }) => {
+  const StatusRow = ({ icon, name, hasLink, color, isCustomIcon = false }) => {
     const bgColors = {
       blue: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
       yellow: 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400',
@@ -143,7 +146,7 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
     return (
       <div className={`flex items-center justify-between p-4 rounded-2xl border transition-colors ${hasLink ? 'bg-green-50/50 border-green-200 dark:bg-green-900/20 dark:border-green-900/40' : 'bg-gray-50/50 border-gray-200 dark:bg-gray-800/50 dark:border-gray-700'}`}>
         <div className="flex items-center gap-4">
-          <div className={`p-3 rounded-xl ${bgColors[color]}`}>
+          <div className={`${isCustomIcon ? '' : `p-3 rounded-xl ${bgColors[color]}`}`}>
             {icon}
           </div>
           <span className={`font-bold ${hasLink ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
@@ -275,14 +278,14 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
             
             <div>
               <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                <Store className="w-4 h-4 text-yellow-500" /> Mercado Libre / Chileautos
+                <Store className="w-4 h-4 text-yellow-500" /> Mercado Libre
               </label>
               <input type="url" name="mercadoLibre" value={links.mercadoLibre} onChange={handleLinkChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none" placeholder="https://auto.mercadolibre.cl/..." />
             </div>
             
             <div>
               <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                <Car className="w-4 h-4 text-red-500" /> Autos Usados
+                <img src="/autosusados-logo.png" alt="autosusados.cl" className="h-5 w-auto object-contain" /> autosusados.cl
               </label>
               <input type="url" name="autosUsados" value={links.autosUsados} onChange={handleLinkChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none" placeholder="https://autosusados.cl/..." />
             </div>
@@ -333,10 +336,10 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
           </button>
         </div>
         
-        <div className="overflow-x-auto pb-4">
+        <div className="overflow-x-auto pb-4 flex justify-center">
           <div 
             ref={cardRef} 
-            className="bg-white dark:bg-gray-800 rounded-[24px] shadow-sm border border-gray-200 dark:border-gray-700 p-8 w-full max-w-2xl mx-auto relative overflow-hidden"
+            className="bg-white dark:bg-gray-800 rounded-[24px] shadow-sm border border-gray-200 dark:border-gray-700 p-8 w-[600px] min-w-[600px] shrink-0 relative overflow-hidden"
           >
             {/* Decoración de fondo */}
             <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl -mr-10 -mt-10"></div>
@@ -356,15 +359,16 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
               />
               <StatusRow 
                 icon={<Store className="w-6 h-6" />} 
-                name="Mercado Libre / Chileautos" 
+                name="Mercado Libre" 
                 hasLink={!!links.mercadoLibre} 
                 color="yellow"
               />
               <StatusRow 
-                icon={<Car className="w-6 h-6" />} 
-                name="Autos Usados" 
+                icon={<img src="/autosusados-logo.png" alt="autosusados.cl" className="h-8 w-auto object-contain drop-shadow-sm" />} 
+                name="autosusados.cl" 
                 hasLink={!!links.autosUsados} 
                 color="red"
+                isCustomIcon={true}
               />
               <StatusRow 
                 icon={<ShoppingBag className="w-6 h-6" />} 
