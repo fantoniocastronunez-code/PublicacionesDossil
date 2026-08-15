@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { db, storage } from '../config/firebase';
-import { collection, getDocs, addDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, updateDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -71,6 +71,39 @@ export const useVehicleStore = create((set, get) => ({
     } catch (error) {
       console.error("Error al guardar el vehículo: ", error);
       set({ error: error.message, loading: false });
+    }
+  },
+
+  addMultipleVehiculos: async (vehiculosArray) => {
+    set({ loading: true, error: null });
+    try {
+      const batch = writeBatch(db);
+      const nuevosVehiculos = [];
+      const timestamp = serverTimestamp();
+
+      for (const vehiculo of vehiculosArray) {
+        const newRef = doc(collection(db, "vehiculos"));
+        const vehiculoParaGuardar = {
+          ...vehiculo,
+          fotos: [], // Sin fotos iniciales desde Excel
+          fechaIngreso: timestamp
+        };
+        batch.set(newRef, vehiculoParaGuardar);
+        
+        nuevosVehiculos.push({ ...vehiculoParaGuardar, id: newRef.id, fechaIngreso: new Date().toISOString() });
+      }
+
+      await withTimeout(batch.commit());
+
+      set(state => ({
+        vehiculos: [...nuevosVehiculos, ...state.vehiculos],
+        loading: false
+      }));
+
+    } catch (error) {
+      console.error("Error al guardar múltiples vehículos: ", error);
+      set({ error: error.message, loading: false });
+      throw error;
     }
   },
 

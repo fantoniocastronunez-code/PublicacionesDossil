@@ -1,14 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useVehicleStore } from '../store/useVehicleStore';
-import { CheckCircle2, ChevronRight, UploadCloud, Loader2, ArrowLeft, ArrowRight, Trash2, Star } from 'lucide-react';
+import { CheckCircle2, ChevronRight, UploadCloud, Loader2, ArrowLeft, ArrowRight, Trash2, Star, FileSpreadsheet } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import { CATEGORIAS, TIPOS_VEHICULO, MARCAS_MODELOS } from '../data/catalog';
 
 export default function AddVehicle() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { addVehiculo, updateVehiculo, vehiculos, loading } = useVehicleStore();
+  const { addVehiculo, updateVehiculo, addMultipleVehiculos, vehiculos, loading } = useVehicleStore();
   const [step, setStep] = useState(1);
+  const fileInputRef = useRef(null);
+  const [isUploadingExcel, setIsUploadingExcel] = useState(false);
   
   const [formData, setFormData] = useState({
     patente: '',
@@ -129,6 +132,63 @@ export default function AddVehicle() {
     setImagenes(prev => prev.filter((_, i) => i !== index));
   };
 
+  const handleExcelUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setIsUploadingExcel(true);
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+      const vehiculosToUpload = jsonData.map(row => {
+        return {
+          patente: String(row.Patente || '').toUpperCase(),
+          fichaTecnica: {
+            categoria: row.Categoria || 'Liviano',
+            tipoVehiculo: row.Tipo || 'Auto (Sedán/Hatchback)',
+            marca: String(row.Marca || ''),
+            modelo: String(row.Modelo || ''),
+            version: String(row.Version || ''),
+            anio: String(row.Anio || ''),
+            vin: String(row.Vin || ''),
+            numeroMotor: String(row.NumeroMotor || '')
+          },
+          comercial: {
+            tituloPublicacion: String(row.TituloPublicacion || ''),
+            descripcion: String(row.Descripcion || ''),
+            precio: String(row.Precio || ''),
+            masIva: String(row.MasIVA || '').toUpperCase() === 'SI'
+          },
+          publicaciones: {
+            webNativa: '',
+            mercadoLibre: '',
+            autosUsados: '',
+            fbMarketplace: ''
+          }
+        };
+      });
+
+      if (vehiculosToUpload.length === 0) {
+        alert("El Excel está vacío o no se pudo leer correctamente.");
+        return;
+      }
+
+      await addMultipleVehiculos(vehiculosToUpload);
+      alert(`¡Carga masiva exitosa! Se agregaron ${vehiculosToUpload.length} vehículos al inventario.`);
+      navigate('/');
+
+    } catch (error) {
+      alert("Error al procesar el Excel: " + error.message);
+    } finally {
+      setIsUploadingExcel(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   const guardarVehiculo = async (e) => {
     e.preventDefault();
     try {
@@ -151,13 +211,38 @@ export default function AddVehicle() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-12 transition-colors">
-      <div className="mb-8">
-        <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-2">
-          {id ? 'Editar Vehículo' : 'Agregar Vehículo Nuevo'}
-        </h1>
-        <p className="text-gray-500 dark:text-gray-400">
-          {id ? 'Modifica los datos del vehículo existente.' : 'Completa la información para ingresar un nuevo vehículo al inventario.'}
-        </p>
+      <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-2">
+            {id ? 'Editar Vehículo' : 'Agregar Vehículo Nuevo'}
+          </h1>
+          <p className="text-gray-500 dark:text-gray-400">
+            {id ? 'Modifica los datos del vehículo existente.' : 'Completa la información para ingresar un nuevo vehículo al inventario.'}
+          </p>
+        </div>
+
+        {!id && (
+          <div>
+            <input 
+              type="file" 
+              accept=".xlsx, .xls" 
+              className="hidden" 
+              ref={fileInputRef} 
+              onChange={handleExcelUpload} 
+            />
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploadingExcel || loading}
+              className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold transition-all shadow-sm disabled:opacity-70"
+            >
+              {isUploadingExcel ? (
+                <><Loader2 className="w-5 h-5 animate-spin" /> Subiendo...</>
+              ) : (
+                <><FileSpreadsheet className="w-5 h-5" /> Carga Masiva</>
+              )}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Progress Steps */}
