@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useVehicleStore } from '../store/useVehicleStore';
-import { CheckCircle2, ChevronRight, UploadCloud, Loader2, ArrowLeft, ArrowRight, Trash2, Star, FileSpreadsheet } from 'lucide-react';
+import { CheckCircle2, ChevronRight, UploadCloud, Loader2, ArrowLeft, ArrowRight, Trash2, Star, FileSpreadsheet, Link as LinkIcon } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { CATEGORIAS, TIPOS_VEHICULO, MARCAS_MODELOS } from '../data/catalog';
 
@@ -132,6 +132,80 @@ export default function AddVehicle() {
     setImagenes(prev => prev.filter((_, i) => i !== index));
   };
 
+  const procesarJSONExcel = async (jsonData) => {
+    const vehiculosToUpload = jsonData.map(row => {
+      return {
+        patente: String(row.Patente || '').toUpperCase(),
+        fichaTecnica: {
+          categoria: row.Categoria || 'Liviano',
+          tipoVehiculo: row.Tipo || 'Auto (Sedán/Hatchback)',
+          marca: String(row.Marca || ''),
+          modelo: String(row.Modelo || ''),
+          version: String(row.Version || ''),
+          anio: String(row.Anio || ''),
+          vin: String(row.Vin || ''),
+          numeroMotor: String(row.NumeroMotor || '')
+        },
+        comercial: {
+          tituloPublicacion: String(row.TituloPublicacion || ''),
+          descripcion: String(row.Descripcion || ''),
+          precio: String(row.Precio || ''),
+          masIva: String(row.MasIVA || '').toUpperCase() === 'SI'
+        },
+        publicaciones: {
+          webNativa: '',
+          mercadoLibre: '',
+          autosUsados: '',
+          fbMarketplace: ''
+        }
+      };
+    });
+
+    if (vehiculosToUpload.length === 0) {
+      throw new Error("El archivo está vacío o no se pudo leer correctamente.");
+    }
+
+    await addMultipleVehiculos(vehiculosToUpload);
+    return vehiculosToUpload.length;
+  };
+
+  const handleGoogleSheetsLink = async () => {
+    const url = window.prompt("Pega el enlace (URL) de tu Google Sheet público:\n(Debe tener permisos de 'Cualquier persona con el enlace')");
+    if (!url) return;
+
+    const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+    if (!match || !match[1]) {
+      alert("Enlace inválido. Asegúrate de copiar el enlace completo desde Google Sheets.");
+      return;
+    }
+    
+    const spreadsheetId = match[1];
+    const exportUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=xlsx`;
+
+    setIsUploadingExcel(true);
+    try {
+      const response = await fetch(exportUrl);
+      if (!response.ok) {
+        throw new Error("No se pudo descargar el archivo. Verifica que tenga permisos de lectura públicos.");
+      }
+      
+      const data = await response.arrayBuffer();
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+      const count = await procesarJSONExcel(jsonData);
+      alert(`¡Carga exitosa! Se agregaron ${count} vehículos desde Google Sheets.`);
+      navigate('/');
+
+    } catch (error) {
+      alert("Error al importar desde Google Sheets: " + error.message);
+    } finally {
+      setIsUploadingExcel(false);
+    }
+  };
+
   const handleExcelUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -144,41 +218,8 @@ export default function AddVehicle() {
       const worksheet = workbook.Sheets[sheetName];
       const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-      const vehiculosToUpload = jsonData.map(row => {
-        return {
-          patente: String(row.Patente || '').toUpperCase(),
-          fichaTecnica: {
-            categoria: row.Categoria || 'Liviano',
-            tipoVehiculo: row.Tipo || 'Auto (Sedán/Hatchback)',
-            marca: String(row.Marca || ''),
-            modelo: String(row.Modelo || ''),
-            version: String(row.Version || ''),
-            anio: String(row.Anio || ''),
-            vin: String(row.Vin || ''),
-            numeroMotor: String(row.NumeroMotor || '')
-          },
-          comercial: {
-            tituloPublicacion: String(row.TituloPublicacion || ''),
-            descripcion: String(row.Descripcion || ''),
-            precio: String(row.Precio || ''),
-            masIva: String(row.MasIVA || '').toUpperCase() === 'SI'
-          },
-          publicaciones: {
-            webNativa: '',
-            mercadoLibre: '',
-            autosUsados: '',
-            fbMarketplace: ''
-          }
-        };
-      });
-
-      if (vehiculosToUpload.length === 0) {
-        alert("El Excel está vacío o no se pudo leer correctamente.");
-        return;
-      }
-
-      await addMultipleVehiculos(vehiculosToUpload);
-      alert(`¡Carga masiva exitosa! Se agregaron ${vehiculosToUpload.length} vehículos al inventario.`);
+      const count = await procesarJSONExcel(jsonData);
+      alert(`¡Carga masiva exitosa! Se agregaron ${count} vehículos al inventario.`);
       navigate('/');
 
     } catch (error) {
@@ -222,25 +263,39 @@ export default function AddVehicle() {
         </div>
 
         {!id && (
-          <div>
-            <input 
-              type="file" 
-              accept=".xlsx, .xls" 
-              className="hidden" 
-              ref={fileInputRef} 
-              onChange={handleExcelUpload} 
-            />
+          <div className="flex flex-col sm:flex-row items-center gap-3">
             <button 
-              onClick={() => fileInputRef.current?.click()}
+              onClick={handleGoogleSheetsLink}
               disabled={isUploadingExcel || loading}
-              className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold transition-all shadow-sm disabled:opacity-70"
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl font-bold transition-all shadow-sm disabled:opacity-70 w-full sm:w-auto justify-center"
             >
               {isUploadingExcel ? (
-                <><Loader2 className="w-5 h-5 animate-spin" /> Subiendo...</>
+                <><Loader2 className="w-5 h-5 animate-spin" /> Importando...</>
               ) : (
-                <><FileSpreadsheet className="w-5 h-5" /> Carga Masiva</>
+                <><LinkIcon className="w-5 h-5" /> Importar GSheets</>
               )}
             </button>
+            <span className="text-gray-300 dark:text-gray-600 hidden sm:block">o</span>
+            <div>
+              <input 
+                type="file" 
+                accept=".xlsx, .xls" 
+                className="hidden" 
+                ref={fileInputRef} 
+                onChange={handleExcelUpload} 
+              />
+              <button 
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploadingExcel || loading}
+                className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold transition-all shadow-sm disabled:opacity-70 w-full sm:w-auto justify-center"
+              >
+                {isUploadingExcel ? (
+                  <><Loader2 className="w-5 h-5 animate-spin" /> Subiendo...</>
+                ) : (
+                  <><FileSpreadsheet className="w-5 h-5" /> Subir Excel Local</>
+                )}
+              </button>
+            </div>
           </div>
         )}
       </div>
