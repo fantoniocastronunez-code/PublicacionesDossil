@@ -104,31 +104,31 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
   const CopyField = ({ label, value, fieldId, isTextArea = false, isSmallArea = false }) => (
     <div className="mb-4">
       <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">{label}</label>
-      <div className="flex gap-2">
+      <div className={`flex gap-2 ${isTextArea ? 'flex-col sm:flex-row' : ''}`}>
         {isTextArea ? (
           <textarea 
             readOnly 
             value={value} 
-            className={`flex-1 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-900 dark:text-gray-100 resize-y font-mono text-sm ${isSmallArea ? 'h-28' : 'min-h-[250px]'}`}
+            className={`flex-1 w-full rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-900 dark:text-gray-100 resize-y font-mono text-sm ${isSmallArea ? 'h-28' : 'min-h-[250px]'}`}
           />
         ) : (
           <input 
             type="text" 
             readOnly 
             value={value} 
-            className="flex-1 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-900 dark:text-gray-100"
+            className="flex-1 min-w-0 w-full rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-900 dark:text-gray-100"
           />
         )}
         <button 
           onClick={() => handleCopy(value, fieldId)}
-          className={`flex-shrink-0 px-4 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+          className={`flex-shrink-0 px-4 py-3 sm:py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${
             copiedField === fieldId 
               ? 'bg-green-500 text-white' 
               : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900/50 dark:text-indigo-300'
           }`}
         >
           {copiedField === fieldId ? <CheckCircle2 className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
-          <span className="hidden sm:inline">{copiedField === fieldId ? 'Copiado' : 'Copiar'}</span>
+          <span className="inline">{copiedField === fieldId ? 'Copiado' : 'Copiar'}</span>
         </button>
       </div>
     </div>
@@ -159,12 +159,12 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
           <div className="p-6">
             <CopyField label="Título de Publicación" value={titulo} fieldId="titulo" />
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <CopyField label="Marca" value={marca} fieldId="marca" />
               <CopyField label="Modelo" value={modelo} fieldId="modelo" />
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <CopyField label="Versión" value={version} fieldId="version" />
               <CopyField label="Año" value={anio} fieldId="anio" />
             </div>
