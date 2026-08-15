@@ -1,32 +1,38 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import AddVehicle from './pages/AddVehicle';
 import VehicleDetail from './pages/VehicleDetail';
+import PublishVehicle from './pages/PublishVehicle';
 import { useThemeStore } from './store/useThemeStore';
 
 function App() {
-  const initTheme = useThemeStore(state => state.initTheme);
+  const { isDarkMode } = useThemeStore();
 
   useEffect(() => {
-    initTheme();
-  }, [initTheme]);
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
 
   return (
-    <BrowserRouter>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 font-sans transition-colors duration-300 selection:bg-indigo-200">
+    <Router>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
         <Navbar />
-        <main>
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/agregar" element={<AddVehicle />} />
             <Route path="/editar/:id" element={<AddVehicle />} />
             <Route path="/vehiculo/:id" element={<VehicleDetail />} />
+            <Route path="/vehiculo/:id/publicar" element={<PublishVehicle />} />
           </Routes>
         </main>
       </div>
-    </BrowserRouter>
+    </Router>
   );
 }
 

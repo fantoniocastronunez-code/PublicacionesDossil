@@ -1,6 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { ArrowLeft, CarFront, FileText, Calendar, KeyRound, Globe, ExternalLink, Hash, Loader2, Edit } from 'lucide-react';
+import { ArrowLeft, CarFront, FileText, Calendar, KeyRound, Globe, ExternalLink, Hash, Loader2, Edit, Share2 } from 'lucide-react';
 import { useVehicleStore } from '../store/useVehicleStore';
 
 export default function VehicleDetail() {
@@ -18,8 +18,8 @@ export default function VehicleDetail() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-96">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <Loader2 className="w-12 h-12 text-indigo-600 animate-spin" />
       </div>
     );
   }
@@ -43,9 +43,14 @@ export default function VehicleDetail() {
         <Link to="/" className="inline-flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
           <ArrowLeft className="w-5 h-5" /> Volver al inventario
         </Link>
-        <Link to={`/editar/${id}`} className="inline-flex items-center gap-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-4 py-2 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors font-medium">
-          <Edit className="w-4 h-4" /> Editar Vehículo
-        </Link>
+        <div className="flex gap-3">
+          <Link to={`/vehiculo/${id}/publicar`} className="inline-flex items-center gap-2 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 px-4 py-2 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors font-medium shadow-sm">
+            <Share2 className="w-4 h-4" /> <span className="hidden sm:inline">Preparar Publicaciones</span>
+          </Link>
+          <Link to={`/editar/${id}`} className="inline-flex items-center gap-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-4 py-2 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors font-medium">
+            <Edit className="w-4 h-4" /> Editar
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
