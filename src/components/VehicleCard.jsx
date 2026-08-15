@@ -33,12 +33,28 @@ export default function VehicleCard({ vehiculo }) {
           </span>
         </div>
         
-          to={`/vehiculo/${vehiculo.id}`}
-          className="w-full flex items-center justify-center gap-2 bg-gray-50 dark:bg-gray-700/50 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-gray-700 font-medium py-2.5 rounded-xl transition-colors border border-gray-100 dark:border-gray-600"
+        {precioFormatted && (
+          <div className="mb-4 flex items-end gap-2">
+            <span className="text-2xl font-black text-indigo-600 dark:text-indigo-400">{precioFormatted}</span>
+            {vehiculo.comercial?.masIva && <span className="text-xs font-bold bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 px-2 py-1 rounded-full mb-1">+ IVA</span>}
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 gap-2 mt-auto mb-4">
+          <div className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
+            <Calendar className="w-4 h-4" /> {vehiculo.fichaTecnica?.anio}
+          </div>
+          <div className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
+            <KeyRound className="w-4 h-4" /> {vehiculo.fichaTecnica?.numeroMotor ? 'Rev. OK' : 'Pend.'}
+          </div>
+        </div>
+        
+        <div 
+          className="w-full flex items-center justify-center gap-2 bg-gray-50 dark:bg-gray-700/50 text-indigo-600 dark:text-indigo-400 font-medium py-2.5 rounded-xl transition-colors border border-gray-100 dark:border-gray-600 group-hover:bg-indigo-50 dark:group-hover:bg-gray-700"
         >
           Ver Ficha Completa <ExternalLink className="w-4 h-4" />
-        </Link>
+        </div>
       </div>
-    </div>
+    </Link>
   );
 }
