@@ -4,15 +4,24 @@ import { collection, getDocs, addDoc, doc, updateDoc, serverTimestamp } from 'fi
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { v4 as uuidv4 } from 'uuid';
 
+const withTimeout = (promise, ms = 15000) => {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => 
+      setTimeout(() => reject(new Error("La operación tardó demasiado. Revisa tu conexión a internet o las Reglas de Seguridad en Firebase.")), ms)
+    )
+  ]);
+};
+
 export const useVehicleStore = create((set, get) => ({
   vehiculos: [],
   loading: false,
   error: null,
 
   fetchVehiculos: async () => {
-    set({ loading: true });
+    set({ loading: true, error: null });
     try {
-      const querySnapshot = await getDocs(collection(db, "vehiculos"));
+      const querySnapshot = await withTimeout(getDocs(collection(db, "vehiculos")));
       const vehiculosData = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
@@ -24,17 +33,21 @@ export const useVehicleStore = create((set, get) => ({
     }
   },
 
-  addVehiculo: async (nuevoVehiculo, archivos) => {
-    set({ loading: true });
+  addVehiculo: async (nuevoVehiculo, imagenes) => {
+    set({ loading: true, error: null });
     try {
-      // 1. Subir fotos a Firebase Storage
+      // 1. Procesar todas las fotos en el orden exacto
       const urlsFotos = [];
-      if (archivos && archivos.length > 0) {
-        for (const archivo of archivos) {
-          const imageRef = ref(storage, `vehiculos/${uuidv4()}_${archivo.name}`);
-          await uploadBytes(imageRef, archivo);
-          const url = await getDownloadURL(imageRef);
-          urlsFotos.push(url);
+      if (imagenes && imagenes.length > 0) {
+        for (const img of imagenes) {
+          if (img.file) {
+            const imageRef = ref(storage, `vehiculos/${uuidv4()}_${img.file.name}`);
+            await withTimeout(uploadBytes(imageRef, img.file));
+            const url = await withTimeout(getDownloadURL(imageRef));
+            urlsFotos.push(url);
+          } else {
+            urlsFotos.push(img.url); // Ya era una URL de Firebase
+          }
         }
       }
 
@@ -45,10 +58,9 @@ export const useVehicleStore = create((set, get) => ({
         fechaIngreso: serverTimestamp()
       };
       
-      // Eliminar archivosFotos del objeto antes de guardar en DB
-      delete vehiculoParaGuardar.archivosFotos;
+      delete vehiculoParaGuardar.fotos_temporales;
 
-      const docRef = await addDoc(collection(db, "vehiculos"), vehiculoParaGuardar);
+      const docRef = await withTimeout(addDoc(collection(db, "vehiculos"), vehiculoParaGuardar));
       
       // 3. Actualizar el estado local (optimista)
       set(state => ({
@@ -62,36 +74,37 @@ export const useVehicleStore = create((set, get) => ({
     }
   },
 
-  updateVehiculo: async (id, datosActualizados, nuevosArchivos) => {
-    set({ loading: true });
+  updateVehiculo: async (id, datosActualizados, imagenes) => {
+    set({ loading: true, error: null });
     try {
-      // 1. Subir nuevas fotos si existen
-      let urlsFotosAdicionales = [];
-      if (nuevosArchivos && nuevosArchivos.length > 0) {
-        for (const archivo of nuevosArchivos) {
-          const imageRef = ref(storage, `vehiculos/${uuidv4()}_${archivo.name}`);
-          await uploadBytes(imageRef, archivo);
-          const url = await getDownloadURL(imageRef);
-          urlsFotosAdicionales.push(url);
+      // 1. Procesar todas las fotos en el orden exacto
+      const urlsFotos = [];
+      if (imagenes && imagenes.length > 0) {
+        for (const img of imagenes) {
+          if (img.file) {
+            const imageRef = ref(storage, `vehiculos/${uuidv4()}_${img.file.name}`);
+            await withTimeout(uploadBytes(imageRef, img.file));
+            const url = await withTimeout(getDownloadURL(imageRef));
+            urlsFotos.push(url);
+          } else {
+            urlsFotos.push(img.url); // Mantiene la URL existente en ese orden
+          }
         }
       }
 
-      // 2. Unir fotos antiguas con las nuevas (las urls antiguas ya vienen en datosActualizados.fotos)
-      const fotosFinales = [...(datosActualizados.fotos || []), ...urlsFotosAdicionales];
-
-      // 3. Preparar datos para Firestore
+      // 2. Preparar datos para Firestore
       const vehiculoParaActualizar = {
         ...datosActualizados,
-        fotos: fotosFinales
+        fotos: urlsFotos
       };
       
-      delete vehiculoParaActualizar.archivosFotos;
+      delete vehiculoParaActualizar.fotos_temporales;
 
-      // 4. Actualizar en Firestore
+      // 3. Actualizar en Firestore
       const vehiculoRef = doc(db, "vehiculos", id);
-      await updateDoc(vehiculoRef, vehiculoParaActualizar);
+      await withTimeout(updateDoc(vehiculoRef, vehiculoParaActualizar));
       
-      // 5. Actualizar el estado local (optimista)
+      // 4. Actualizar el estado local (optimista)
       set(state => ({
         vehiculos: state.vehiculos.map(v => v.id === id ? { ...v, ...vehiculoParaActualizar } : v),
         loading: false

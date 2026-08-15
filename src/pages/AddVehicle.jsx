@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useVehicleStore } from '../store/useVehicleStore';
-import { CheckCircle2, ChevronRight, UploadCloud, Loader2 } from 'lucide-react';
+import { CheckCircle2, ChevronRight, UploadCloud, Loader2, ArrowLeft, ArrowRight, Trash2, Star } from 'lucide-react';
 
 export default function AddVehicle() {
   const navigate = useNavigate();
@@ -12,10 +12,10 @@ export default function AddVehicle() {
   const [formData, setFormData] = useState({
     patente: '',
     fichaTecnica: { marca: '', modelo: '', version: '', anio: '', vin: '', numeroMotor: '' },
-    fotos: [], // Almacena URLs temporales
-    archivosFotos: [], // Almacena archivos reales para Firebase
     publicaciones: { webNativa: '', mercadoLibre: '', autosUsados: '', fbMarketplace: '' }
   });
+
+  const [imagenes, setImagenes] = useState([]); // { id, url, file }
 
   useEffect(() => {
     if (id) {
@@ -31,8 +31,6 @@ export default function AddVehicle() {
             vin: vehiculoExistente.fichaTecnica?.vin || '',
             numeroMotor: vehiculoExistente.fichaTecnica?.numeroMotor || ''
           },
-          fotos: vehiculoExistente.fotos || [],
-          archivosFotos: [],
           publicaciones: {
             webNativa: vehiculoExistente.publicaciones?.webNativa || '',
             mercadoLibre: vehiculoExistente.publicaciones?.mercadoLibre || '',
@@ -40,6 +38,14 @@ export default function AddVehicle() {
             fbMarketplace: vehiculoExistente.publicaciones?.fbMarketplace || ''
           }
         });
+
+        if (vehiculoExistente.fotos) {
+          setImagenes(vehiculoExistente.fotos.map((url, i) => ({
+            id: `old_${i}_${Math.random()}`,
+            url,
+            file: null
+          })));
+        }
       }
     }
   }, [id, vehiculos]);
@@ -66,22 +72,54 @@ export default function AddVehicle() {
 
   const handleFotoUpload = (e) => {
     const files = Array.from(e.target.files);
-    const urls = files.map(file => URL.createObjectURL(file));
-    setFormData(prev => ({
-      ...prev,
-      fotos: [...prev.fotos, ...urls],
-      archivosFotos: [...(prev.archivosFotos || []), ...files]
+    const nuevasImagenes = files.map(file => ({
+      id: `new_${Date.now()}_${Math.random()}`,
+      url: URL.createObjectURL(file),
+      file
     }));
+    setImagenes(prev => [...prev, ...nuevasImagenes]);
+  };
+
+  const moverIzquierda = (index) => {
+    if (index === 0) return;
+    setImagenes(prev => {
+      const nuevas = [...prev];
+      [nuevas[index - 1], nuevas[index]] = [nuevas[index], nuevas[index - 1]];
+      return nuevas;
+    });
+  };
+
+  const moverDerecha = (index) => {
+    setImagenes(prev => {
+      if (index === prev.length - 1) return prev;
+      const nuevas = [...prev];
+      [nuevas[index], nuevas[index + 1]] = [nuevas[index + 1], nuevas[index]];
+      return nuevas;
+    });
+  };
+
+  const eliminarFoto = (index) => {
+    setImagenes(prev => prev.filter((_, i) => i !== index));
   };
 
   const guardarVehiculo = async (e) => {
     e.preventDefault();
-    if (id) {
-      await updateVehiculo(id, formData, formData.archivosFotos);
-    } else {
-      await addVehiculo(formData, formData.archivosFotos);
+    try {
+      if (id) {
+        await updateVehiculo(id, formData, imagenes);
+      } else {
+        await addVehiculo(formData, imagenes);
+      }
+      
+      const { error } = useVehicleStore.getState();
+      if (error) {
+        alert("Atención: " + error);
+      } else {
+        navigate('/');
+      }
+    } catch (err) {
+      alert("Error inesperado: " + err.message);
     }
-    navigate('/');
   };
 
   return (
@@ -153,14 +191,34 @@ export default function AddVehicle() {
               <UploadCloud className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-600 dark:text-gray-300 font-medium">Haz clic o arrastra fotos aquí</p>
               <p className="text-sm text-gray-400 mt-1">PNG, JPG hasta 5MB</p>
-              <input type="file" multiple accept="image/*" onChange={handleFotoUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+              <input type="file" multiple accept="image/*" onChange={handleFotoUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" title="" />
             </div>
 
-            {formData.fotos.length > 0 && (
-              <div className="mt-6 grid grid-cols-4 gap-4">
-                {formData.fotos.map((foto, idx) => (
-                  <div key={idx} className="aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
-                    <img src={foto} alt={`Preview ${idx}`} className="w-full h-full object-cover" />
+            {imagenes.length > 0 && (
+              <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {imagenes.map((img, idx) => (
+                  <div key={img.id} className={`relative aspect-[4/3] rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900 border-2 transition-all group ${idx === 0 ? 'border-indigo-500 shadow-md ring-2 ring-indigo-500/20' : 'border-gray-200 dark:border-gray-700'}`}>
+                    <img src={img.url} alt={`Preview ${idx}`} className="w-full h-full object-cover" />
+                    
+                    {idx === 0 && (
+                      <div className="absolute top-2 left-2 bg-indigo-600 text-white text-xs font-bold px-2 py-1 rounded shadow flex items-center gap-1 z-10">
+                        <Star className="w-3 h-3 fill-white" /> Portada
+                      </div>
+                    )}
+
+                    <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-2 flex justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex gap-1">
+                        <button type="button" onClick={() => moverIzquierda(idx)} disabled={idx === 0} className="p-1.5 bg-white/20 hover:bg-white/40 disabled:opacity-30 rounded backdrop-blur-sm text-white transition-colors" title="Mover a la izquierda">
+                          <ArrowLeft className="w-4 h-4" />
+                        </button>
+                        <button type="button" onClick={() => moverDerecha(idx)} disabled={idx === imagenes.length - 1} className="p-1.5 bg-white/20 hover:bg-white/40 disabled:opacity-30 rounded backdrop-blur-sm text-white transition-colors" title="Mover a la derecha">
+                          <ArrowRight className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <button type="button" onClick={() => eliminarFoto(idx)} className="p-1.5 bg-red-500/80 hover:bg-red-500 text-white rounded backdrop-blur-sm transition-colors" title="Eliminar foto">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
