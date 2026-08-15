@@ -14,7 +14,8 @@ export default function Home() {
   const filteredVehiculos = vehiculos.filter(v => 
     v.patente.toLowerCase().includes(searchTerm.toLowerCase()) ||
     v.fichaTecnica?.marca?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    v.fichaTecnica?.modelo?.toLowerCase().includes(searchTerm.toLowerCase())
+    v.fichaTecnica?.modelo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    v.fichaTecnica?.version?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (

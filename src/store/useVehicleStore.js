@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { db, storage } from '../config/firebase';
-import { collection, getDocs, addDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { v4 as uuidv4 } from 'uuid';
 
 export const useVehicleStore = create((set, get) => ({
   vehiculos: [],
@@ -9,61 +10,96 @@ export const useVehicleStore = create((set, get) => ({
   error: null,
 
   fetchVehiculos: async () => {
-    if (!db) return; // Fallback handled in config
     set({ loading: true });
     try {
       const querySnapshot = await getDocs(collection(db, "vehiculos"));
-      const vehiculos = querySnapshot.docs.map(doc => ({
+      const vehiculosData = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
-      set({ vehiculos, loading: false });
+      set({ vehiculos: vehiculosData, loading: false });
     } catch (error) {
-      console.error("Error fetching vehicles:", error);
+      console.error("Error al obtener vehículos: ", error);
       set({ error: error.message, loading: false });
     }
   },
 
-  addVehiculo: async (vehiculo, files) => {
-    if (!db || !storage) {
-      alert("Firebase no está configurado. Agrega tus credenciales en src/config/firebase.js");
-      return;
-    }
-    
+  addVehiculo: async (nuevoVehiculo, archivos) => {
     set({ loading: true });
     try {
-      const uploadedPhotos = [];
-      
-      // Upload photos to Firebase Storage
-      if (files && files.length > 0) {
-        for (const file of files) {
-          const storageRef = ref(storage, `vehiculos/${Date.now()}_${file.name}`);
-          const snapshot = await uploadBytes(storageRef, file);
-          const downloadURL = await getDownloadURL(snapshot.ref);
-          uploadedPhotos.push(downloadURL);
+      // 1. Subir fotos a Firebase Storage
+      const urlsFotos = [];
+      if (archivos && archivos.length > 0) {
+        for (const archivo of archivos) {
+          const imageRef = ref(storage, `vehiculos/${uuidv4()}_${archivo.name}`);
+          await uploadBytes(imageRef, archivo);
+          const url = await getDownloadURL(imageRef);
+          urlsFotos.push(url);
         }
       }
 
-      // Cleanup files and photos (urls) from formData before saving
-      const { archivosFotos, fotos, ...vehiculoData } = vehiculo;
-
-      const newVehiculo = {
-        ...vehiculoData,
-        fotos: uploadedPhotos, // Reemplaza los blobs temporales por URLs reales
-        fechaIngreso: new Date().toISOString()
+      // 2. Guardar datos en Firestore
+      const vehiculoParaGuardar = {
+        ...nuevoVehiculo,
+        fotos: urlsFotos,
+        fechaIngreso: serverTimestamp()
       };
       
-      const docRef = await addDoc(collection(db, "vehiculos"), newVehiculo);
+      // Eliminar archivosFotos del objeto antes de guardar en DB
+      delete vehiculoParaGuardar.archivosFotos;
+
+      const docRef = await addDoc(collection(db, "vehiculos"), vehiculoParaGuardar);
       
+      // 3. Actualizar el estado local (optimista)
       set(state => ({
-        vehiculos: [{ ...newVehiculo, id: docRef.id }, ...state.vehiculos],
+        vehiculos: [{ ...vehiculoParaGuardar, id: docRef.id, fechaIngreso: new Date().toISOString() }, ...state.vehiculos],
         loading: false
       }));
-      
+
     } catch (error) {
-      console.error("Error adding vehicle:", error);
+      console.error("Error al guardar el vehículo: ", error);
       set({ error: error.message, loading: false });
-      alert("Error al guardar en Firebase: " + error.message);
+    }
+  },
+
+  updateVehiculo: async (id, datosActualizados, nuevosArchivos) => {
+    set({ loading: true });
+    try {
+      // 1. Subir nuevas fotos si existen
+      let urlsFotosAdicionales = [];
+      if (nuevosArchivos && nuevosArchivos.length > 0) {
+        for (const archivo of nuevosArchivos) {
+          const imageRef = ref(storage, `vehiculos/${uuidv4()}_${archivo.name}`);
+          await uploadBytes(imageRef, archivo);
+          const url = await getDownloadURL(imageRef);
+          urlsFotosAdicionales.push(url);
+        }
+      }
+
+      // 2. Unir fotos antiguas con las nuevas (las urls antiguas ya vienen en datosActualizados.fotos)
+      const fotosFinales = [...(datosActualizados.fotos || []), ...urlsFotosAdicionales];
+
+      // 3. Preparar datos para Firestore
+      const vehiculoParaActualizar = {
+        ...datosActualizados,
+        fotos: fotosFinales
+      };
+      
+      delete vehiculoParaActualizar.archivosFotos;
+
+      // 4. Actualizar en Firestore
+      const vehiculoRef = doc(db, "vehiculos", id);
+      await updateDoc(vehiculoRef, vehiculoParaActualizar);
+      
+      // 5. Actualizar el estado local (optimista)
+      set(state => ({
+        vehiculos: state.vehiculos.map(v => v.id === id ? { ...v, ...vehiculoParaActualizar } : v),
+        loading: false
+      }));
+
+    } catch (error) {
+      console.error("Error al actualizar el vehículo: ", error);
+      set({ error: error.message, loading: false });
     }
   }
 }));

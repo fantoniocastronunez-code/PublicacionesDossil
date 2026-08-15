@@ -21,6 +21,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/agregar" element={<AddVehicle />} />
+            <Route path="/editar/:id" element={<AddVehicle />} />
             <Route path="/vehiculo/:id" element={<VehicleDetail />} />
           </Routes>
         </main>

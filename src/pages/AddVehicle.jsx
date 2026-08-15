@@ -1,20 +1,48 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useVehicleStore } from '../store/useVehicleStore';
 import { CheckCircle2, ChevronRight, UploadCloud, Loader2 } from 'lucide-react';
 
 export default function AddVehicle() {
   const navigate = useNavigate();
-  const { addVehiculo, loading } = useVehicleStore();
+  const { id } = useParams();
+  const { addVehiculo, updateVehiculo, vehiculos, loading } = useVehicleStore();
   const [step, setStep] = useState(1);
   
   const [formData, setFormData] = useState({
     patente: '',
-    fichaTecnica: { marca: '', modelo: '', anio: '', vin: '', numeroMotor: '' },
+    fichaTecnica: { marca: '', modelo: '', version: '', anio: '', vin: '', numeroMotor: '' },
     fotos: [], // Almacena URLs temporales
     archivosFotos: [], // Almacena archivos reales para Firebase
     publicaciones: { webNativa: '', mercadoLibre: '', autosUsados: '', fbMarketplace: '' }
   });
+
+  useEffect(() => {
+    if (id) {
+      const vehiculoExistente = vehiculos.find(v => v.id === id);
+      if (vehiculoExistente) {
+        setFormData({
+          patente: vehiculoExistente.patente || '',
+          fichaTecnica: {
+            marca: vehiculoExistente.fichaTecnica?.marca || '',
+            modelo: vehiculoExistente.fichaTecnica?.modelo || '',
+            version: vehiculoExistente.fichaTecnica?.version || '',
+            anio: vehiculoExistente.fichaTecnica?.anio || '',
+            vin: vehiculoExistente.fichaTecnica?.vin || '',
+            numeroMotor: vehiculoExistente.fichaTecnica?.numeroMotor || ''
+          },
+          fotos: vehiculoExistente.fotos || [],
+          archivosFotos: [],
+          publicaciones: {
+            webNativa: vehiculoExistente.publicaciones?.webNativa || '',
+            mercadoLibre: vehiculoExistente.publicaciones?.mercadoLibre || '',
+            autosUsados: vehiculoExistente.publicaciones?.autosUsados || '',
+            fbMarketplace: vehiculoExistente.publicaciones?.fbMarketplace || ''
+          }
+        });
+      }
+    }
+  }, [id, vehiculos]);
 
   const handleFichaChange = (e) => {
     const { name, value } = e.target;
@@ -48,15 +76,23 @@ export default function AddVehicle() {
 
   const guardarVehiculo = async (e) => {
     e.preventDefault();
-    await addVehiculo(formData, formData.archivosFotos);
+    if (id) {
+      await updateVehiculo(id, formData, formData.archivosFotos);
+    } else {
+      await addVehiculo(formData, formData.archivosFotos);
+    }
     navigate('/');
   };
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-12 transition-colors">
       <div className="mb-8">
-        <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-2">Agregar Vehículo Nuevo</h1>
-        <p className="text-gray-500 dark:text-gray-400">Completa la información para ingresar un nuevo vehículo al inventario.</p>
+        <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-2">
+          {id ? 'Editar Vehículo' : 'Agregar Vehículo Nuevo'}
+        </h1>
+        <p className="text-gray-500 dark:text-gray-400">
+          {id ? 'Modifica los datos del vehículo existente.' : 'Completa la información para ingresar un nuevo vehículo al inventario.'}
+        </p>
       </div>
 
       {/* Progress Steps */}
@@ -78,28 +114,32 @@ export default function AddVehicle() {
             <h2 className="text-xl font-bold mb-6 text-gray-800 dark:text-gray-100">1. Ficha Técnica</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="col-span-1 sm:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Patente</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Patente <span className="text-red-500">*</span></label>
                 <input type="text" name="patente" value={formData.patente} onChange={handleFichaChange} required className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="EJ: AB123CD" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Marca</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Marca <span className="text-red-500">*</span></label>
                 <input type="text" name="marca" value={formData.fichaTecnica.marca} onChange={handleFichaChange} required className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="Toyota" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Modelo</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Modelo <span className="text-red-500">*</span></label>
                 <input type="text" name="modelo" value={formData.fichaTecnica.modelo} onChange={handleFichaChange} required className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="Yaris" />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Año</label>
-                <input type="number" name="anio" value={formData.fichaTecnica.anio} onChange={handleFichaChange} required className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="2024" />
+              <div className="col-span-1 sm:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Versión (Opcional)</label>
+                <input type="text" name="version" value={formData.fichaTecnica.version} onChange={handleFichaChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="GLI 1.5 AT" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">VIN</label>
-                <input type="text" name="vin" value={formData.fichaTecnica.vin} onChange={handleFichaChange} required className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="Número de chasis" />
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Año (Opcional)</label>
+                <input type="number" name="anio" value={formData.fichaTecnica.anio} onChange={handleFichaChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="2024" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">VIN (Opcional)</label>
+                <input type="text" name="vin" value={formData.fichaTecnica.vin} onChange={handleFichaChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="Número de chasis" />
               </div>
               <div className="col-span-1 sm:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Número de Motor</label>
-                <input type="text" name="numeroMotor" value={formData.fichaTecnica.numeroMotor} onChange={handleFichaChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="Opcional" />
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Número de Motor (Opcional)</label>
+                <input type="text" name="numeroMotor" value={formData.fichaTecnica.numeroMotor} onChange={handleFichaChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="Número de motor" />
               </div>
             </div>
           </div>
@@ -163,7 +203,7 @@ export default function AddVehicle() {
             {loading ? (
               <><Loader2 className="w-5 h-5 animate-spin" /> Guardando...</>
             ) : (
-              <>{step === 3 ? 'Guardar Vehículo' : 'Continuar'} <ChevronRight className="w-5 h-5" /></>
+              <>{step === 3 ? (id ? 'Actualizar Vehículo' : 'Guardar Vehículo') : 'Continuar'} <ChevronRight className="w-5 h-5" /></>
             )}
           </button>
         </div>
