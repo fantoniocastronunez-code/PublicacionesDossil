@@ -33,6 +33,12 @@ export default function VehicleCard({ vehiculo }) {
           </span>
         </div>
         
+        {vehiculo.fichaTecnica?.tipoVehiculo && (
+          <div className="mb-2">
+             <span className="text-xs font-semibold bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded-md border border-gray-200 dark:border-gray-600/50">{vehiculo.fichaTecnica.tipoVehiculo}</span>
+          </div>
+        )}
+
         {precioFormatted && (
           <div className="mb-4 flex items-end gap-2">
             <span className="text-2xl font-black text-indigo-600 dark:text-indigo-400">{precioFormatted}</span>

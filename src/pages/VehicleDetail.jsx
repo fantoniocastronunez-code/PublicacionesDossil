@@ -1,4 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { ArrowLeft, CarFront, FileText, Calendar, KeyRound, Globe, ExternalLink, Hash, Loader2, Edit } from 'lucide-react';
 import { useVehicleStore } from '../store/useVehicleStore';
 
@@ -7,6 +8,13 @@ export default function VehicleDetail() {
   const { vehiculos, loading } = useVehicleStore();
   
   const vehiculo = vehiculos.find(v => v.id === id);
+  const [imagenSeleccionada, setImagenSeleccionada] = useState(null);
+
+  useEffect(() => {
+    if (vehiculo && vehiculo.fotos && vehiculo.fotos.length > 0 && !imagenSeleccionada) {
+      setImagenSeleccionada(vehiculo.fotos[0]);
+    }
+  }, [vehiculo, imagenSeleccionada]);
 
   if (loading) {
     return (
@@ -46,16 +54,20 @@ export default function VehicleDetail() {
         <div className="lg:col-span-2 space-y-4">
           <div className="aspect-[16/9] rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
             <img 
-              src={vehiculo.fotos?.[0] || 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&q=80&w=1200'} 
+              src={imagenSeleccionada || vehiculo.fotos?.[0] || 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&q=80&w=1200'} 
               alt="Vehículo principal" 
               className="w-full h-full object-cover"
             />
           </div>
           {vehiculo.fotos && vehiculo.fotos.length > 1 && (
-            <div className="grid grid-cols-4 gap-4">
-              {vehiculo.fotos.slice(1).map((foto, idx) => (
-                <div key={idx} className="aspect-[4/3] rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
-                  <img src={foto} alt={`Vista ${idx + 2}`} className="w-full h-full object-cover" />
+            <div className="grid grid-cols-4 sm:grid-cols-5 gap-4">
+              {vehiculo.fotos.map((foto, idx) => (
+                <div 
+                  key={idx} 
+                  onClick={() => setImagenSeleccionada(foto)}
+                  className={`aspect-[4/3] rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-900 border-2 transition-all cursor-pointer ${imagenSeleccionada === foto ? 'border-indigo-600 ring-2 ring-indigo-600/20 opacity-100' : 'border-transparent hover:border-indigo-400 opacity-80 hover:opacity-100'}`}
+                >
+                  <img src={foto} alt={`Vista ${idx + 1}`} className="w-full h-full object-cover" />
                 </div>
               ))}
             </div>
@@ -88,8 +100,21 @@ export default function VehicleDetail() {
                 <FileText className="w-5 h-5 text-indigo-600 dark:text-indigo-400" /> Ficha Técnica
               </h3>
 
-              
               <div className="grid grid-cols-2 gap-4 text-sm">
+                {(vehiculo.fichaTecnica?.categoria || vehiculo.fichaTecnica?.tipoVehiculo) && (
+                  <div className="col-span-2 flex flex-wrap gap-2 mb-2">
+                    {vehiculo.fichaTecnica?.categoria && (
+                      <span className="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-3 py-1 rounded-full font-medium border border-indigo-100 dark:border-indigo-800">
+                        {vehiculo.fichaTecnica.categoria}
+                      </span>
+                    )}
+                    {vehiculo.fichaTecnica?.tipoVehiculo && (
+                      <span className="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full font-medium border border-blue-100 dark:border-blue-800">
+                        {vehiculo.fichaTecnica.tipoVehiculo}
+                      </span>
+                    )}
+                  </div>
+                )}
                 <div>
                   <p className="text-gray-500 dark:text-gray-400 flex items-center gap-1"><CarFront className="w-4 h-4"/> Marca</p>
                   <p className="font-semibold text-gray-900 dark:text-gray-100">{vehiculo.fichaTecnica?.marca}</p>

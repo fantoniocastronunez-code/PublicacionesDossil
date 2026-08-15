@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useVehicleStore } from '../store/useVehicleStore';
 import { CheckCircle2, ChevronRight, UploadCloud, Loader2, ArrowLeft, ArrowRight, Trash2, Star } from 'lucide-react';
+import { CATEGORIAS, TIPOS_VEHICULO, MARCAS_MODELOS } from '../data/catalog';
 
 export default function AddVehicle() {
   const navigate = useNavigate();
@@ -11,7 +12,7 @@ export default function AddVehicle() {
   
   const [formData, setFormData] = useState({
     patente: '',
-    fichaTecnica: { marca: '', modelo: '', version: '', anio: '', vin: '', numeroMotor: '' },
+    fichaTecnica: { categoria: 'Liviano', tipoVehiculo: 'Auto (Sedán/Hatchback)', marca: '', modelo: '', version: '', anio: '', vin: '', numeroMotor: '' },
     comercial: { tituloPublicacion: '', descripcion: '', precio: '', masIva: false },
     publicaciones: { webNativa: '', mercadoLibre: '', autosUsados: '', fbMarketplace: '' }
   });
@@ -25,6 +26,8 @@ export default function AddVehicle() {
         setFormData({
           patente: vehiculoExistente.patente || '',
           fichaTecnica: {
+            categoria: vehiculoExistente.fichaTecnica?.categoria || 'Liviano',
+            tipoVehiculo: vehiculoExistente.fichaTecnica?.tipoVehiculo || 'Auto (Sedán/Hatchback)',
             marca: vehiculoExistente.fichaTecnica?.marca || '',
             modelo: vehiculoExistente.fichaTecnica?.modelo || '',
             version: vehiculoExistente.fichaTecnica?.version || '',
@@ -61,6 +64,15 @@ export default function AddVehicle() {
     const { name, value } = e.target;
     if (name === 'patente') {
       setFormData(prev => ({ ...prev, patente: value.toUpperCase() }));
+    } else if (name === 'categoria') {
+      setFormData(prev => ({
+        ...prev,
+        fichaTecnica: { 
+          ...prev.fichaTecnica, 
+          categoria: value,
+          tipoVehiculo: TIPOS_VEHICULO[value]?.[0] || 'Otro' 
+        }
+      }));
     } else {
       setFormData(prev => ({
         ...prev,
@@ -170,13 +182,33 @@ export default function AddVehicle() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Patente <span className="text-red-500">*</span></label>
                 <input type="text" name="patente" value={formData.patente} onChange={handleFichaChange} required className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="EJ: AB123CD" />
               </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Categoría <span className="text-red-500">*</span></label>
+                <select name="categoria" value={formData.fichaTecnica.categoria} onChange={handleFichaChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors">
+                  {CATEGORIAS.map(c => <option key={c} value={c} className="text-gray-900">{c}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo de Vehículo <span className="text-red-500">*</span></label>
+                <select name="tipoVehiculo" value={formData.fichaTecnica.tipoVehiculo} onChange={handleFichaChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors">
+                  {(TIPOS_VEHICULO[formData.fichaTecnica.categoria] || []).map(t => <option key={t} value={t} className="text-gray-900">{t}</option>)}
+                </select>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Marca <span className="text-red-500">*</span></label>
-                <input type="text" name="marca" value={formData.fichaTecnica.marca} onChange={handleFichaChange} required className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="Toyota" />
+                <input type="text" name="marca" list="marcas-list" value={formData.fichaTecnica.marca} onChange={handleFichaChange} required className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="Toyota" />
+                <datalist id="marcas-list">
+                  {Object.keys(MARCAS_MODELOS).map(m => <option key={m} value={m} />)}
+                </datalist>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Modelo <span className="text-red-500">*</span></label>
-                <input type="text" name="modelo" value={formData.fichaTecnica.modelo} onChange={handleFichaChange} required className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="Yaris" />
+                <input type="text" name="modelo" list="modelos-list" value={formData.fichaTecnica.modelo} onChange={handleFichaChange} required className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="Yaris" />
+                <datalist id="modelos-list">
+                  {(MARCAS_MODELOS[formData.fichaTecnica.marca] || []).map(m => <option key={m} value={m} />)}
+                </datalist>
               </div>
               <div className="col-span-1 sm:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Versión (Opcional)</label>
