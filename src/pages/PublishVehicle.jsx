@@ -61,22 +61,13 @@ export default function PublishVehicle() {
     if (!cardRef.current) return;
     setCopyingImage(true);
     try {
-      // Usar un canvasOffet/dimensiones fijas para evitar el cropping
       const element = cardRef.current;
       const blob = await htmlToImage.toBlob(element, {
         pixelRatio: 2, // Mejor calidad
-        width: 600,
         style: {
           transform: 'scale(1)',
           transformOrigin: 'top left',
           margin: '0',
-          width: '600px', // Forzar anchura en la imagen generada
-          minWidth: '600px'
-        },
-        onclone: (clonedNode) => {
-          clonedNode.style.width = '600px';
-          clonedNode.style.minWidth = '600px';
-          clonedNode.style.maxWidth = '600px';
         }
       });
       if (blob) {
@@ -209,6 +200,56 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
         </button>
       </div>
     </div>
+  );
+
+  const ReportCardContent = ({ isExport = false }) => (
+    <>
+      {/* Decoración de fondo */}
+      <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl -mr-10 -mt-10"></div>
+      <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl -ml-10 -mb-10"></div>
+      
+      <div className="relative z-10 text-center mb-8">
+        <h3 className={`${isExport ? 'text-3xl' : 'text-2xl'} font-black text-gray-900 dark:text-white tracking-tight`}>Estado de Publicación</h3>
+        <p className={`text-gray-600 dark:text-gray-300 font-bold ${isExport ? 'text-xl' : 'text-lg'} mt-2`}>{titulo}</p>
+      </div>
+
+      <div className="space-y-4 relative z-10 bg-white/50 dark:bg-gray-800/50 p-3 rounded-[20px]">
+        <StatusRow 
+          icon={<img src="/LOGO.gif" alt="Portal Dossil" className="h-8 w-auto object-contain drop-shadow-sm" />} 
+          name="Portal Dossil" 
+          hasLink={!!links.webNativa} 
+          color="blue"
+          isCustomIcon={true}
+        />
+        <StatusRow 
+          icon={<img src="/Cliente-Logo-Mercado-Libre.png" alt="Mercado Libre" className="h-8 w-auto object-contain drop-shadow-sm" />} 
+          name="Mercado Libre" 
+          hasLink={!!links.mercadoLibre} 
+          color="yellow"
+          isCustomIcon={true}
+        />
+        <StatusRow 
+          icon={<img src="/autosusados-logo.png" alt="autosusados.cl" className="h-8 w-auto object-contain drop-shadow-sm" />} 
+          name="autosusados.cl" 
+          hasLink={!!links.autosUsados} 
+          color="red"
+          isCustomIcon={true}
+        />
+        <StatusRow 
+          icon={<img src="/marketplace-logo.png" alt="Facebook Marketplace" className="h-8 w-auto object-contain drop-shadow-sm" />} 
+          name="Facebook Marketplace" 
+          hasLink={!!links.fbMarketplace} 
+          color="indigo"
+          isCustomIcon={true}
+        />
+      </div>
+
+      <div className="mt-8 text-center border-t border-gray-200 dark:border-gray-700 pt-6 relative z-10">
+        <p className="text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest flex items-center justify-center gap-2">
+          <Store className="w-4 h-4" /> Automotriz Dossil
+        </p>
+      </div>
+    </>
   );
 
   return (
@@ -345,59 +386,21 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
         </div>
         
         <div className="pb-4">
-          <div 
-            ref={cardRef} 
-            className="bg-white dark:bg-gray-800 rounded-[24px] shadow-sm border border-gray-200 dark:border-gray-700 p-6 sm:p-8 w-full max-w-2xl mx-auto relative overflow-hidden"
-          >
-            {/* Decoración de fondo */}
-            <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl -mr-10 -mt-10"></div>
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl -ml-10 -mb-10"></div>
-            
-            <div className="relative z-10 text-center mb-8">
-              <h3 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">Estado de Publicación</h3>
-              <p className="text-gray-600 dark:text-gray-300 font-bold text-lg mt-2">{titulo}</p>
-            </div>
-
-            <div className="space-y-4 relative z-10 bg-white/50 dark:bg-gray-800/50 p-2 rounded-[20px]">
-              <StatusRow 
-                icon={<img src="/LOGO.gif" alt="Portal Dossil" className="h-8 w-auto object-contain drop-shadow-sm" />} 
-                name="Portal Dossil" 
-                hasLink={!!links.webNativa} 
-                color="blue"
-                isCustomIcon={true}
-              />
-              <StatusRow 
-                icon={<img src="/Cliente-Logo-Mercado-Libre.png" alt="Mercado Libre" className="h-8 w-auto object-contain drop-shadow-sm" />} 
-                name="Mercado Libre" 
-                hasLink={!!links.mercadoLibre} 
-                color="yellow"
-                isCustomIcon={true}
-              />
-              <StatusRow 
-                icon={<img src="/autosusados-logo.png" alt="autosusados.cl" className="h-8 w-auto object-contain drop-shadow-sm" />} 
-                name="autosusados.cl" 
-                hasLink={!!links.autosUsados} 
-                color="red"
-                isCustomIcon={true}
-              />
-              <StatusRow 
-                icon={<img src="/marketplace-logo.png" alt="Facebook Marketplace" className="h-8 w-auto object-contain drop-shadow-sm" />} 
-                name="Facebook Marketplace" 
-                hasLink={!!links.fbMarketplace} 
-                color="indigo"
-                isCustomIcon={true}
-              />
-            </div>
-
-            <div className="mt-8 text-center border-t border-gray-200 dark:border-gray-700 pt-6 relative z-10">
-              <p className="text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest flex items-center justify-center gap-2">
-                <Store className="w-4 h-4" /> Automotriz Dossil
-              </p>
-            </div>
+          <div className="bg-white dark:bg-gray-800 rounded-[24px] shadow-sm border border-gray-200 dark:border-gray-700 p-6 sm:p-8 w-full max-w-2xl mx-auto relative overflow-hidden">
+            <ReportCardContent />
           </div>
         </div>
       </div>
 
+      {/* OFF-SCREEN CARD PARA EXPORTACION (Asegura 600px exactos y estilos correctos) */}
+      <div className="fixed top-[-9999px] left-[-9999px] opacity-0 pointer-events-none">
+        <div 
+          ref={cardRef} 
+          className="bg-white dark:bg-gray-800 rounded-[24px] p-8 w-[600px] relative overflow-hidden shadow-none border-none"
+        >
+          <ReportCardContent isExport={true} />
+        </div>
+      </div>
     </div>
   );
 }
