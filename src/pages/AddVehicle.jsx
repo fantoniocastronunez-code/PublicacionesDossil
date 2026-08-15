@@ -12,6 +12,7 @@ export default function AddVehicle() {
   const [formData, setFormData] = useState({
     patente: '',
     fichaTecnica: { marca: '', modelo: '', version: '', anio: '', vin: '', numeroMotor: '' },
+    comercial: { tituloPublicacion: '', descripcion: '', precio: '', masIva: false },
     publicaciones: { webNativa: '', mercadoLibre: '', autosUsados: '', fbMarketplace: '' }
   });
 
@@ -30,6 +31,12 @@ export default function AddVehicle() {
             anio: vehiculoExistente.fichaTecnica?.anio || '',
             vin: vehiculoExistente.fichaTecnica?.vin || '',
             numeroMotor: vehiculoExistente.fichaTecnica?.numeroMotor || ''
+          },
+          comercial: {
+            tituloPublicacion: vehiculoExistente.comercial?.tituloPublicacion || '',
+            descripcion: vehiculoExistente.comercial?.descripcion || '',
+            precio: vehiculoExistente.comercial?.precio || '',
+            masIva: vehiculoExistente.comercial?.masIva || false
           },
           publicaciones: {
             webNativa: vehiculoExistente.publicaciones?.webNativa || '',
@@ -60,6 +67,14 @@ export default function AddVehicle() {
         fichaTecnica: { ...prev.fichaTecnica, [name]: value }
       }));
     }
+  };
+
+  const handleComercialChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      comercial: { ...prev.comercial, [name]: type === 'checkbox' ? checked : value }
+    }));
   };
 
   const handleLinksChange = (e) => {
@@ -178,6 +193,32 @@ export default function AddVehicle() {
               <div className="col-span-1 sm:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Número de Motor (Opcional)</label>
                 <input type="text" name="numeroMotor" value={formData.fichaTecnica.numeroMotor} onChange={handleFichaChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="Número de motor" />
+              </div>
+            </div>
+
+            <h2 className="text-xl font-bold mt-10 mb-6 text-gray-800 dark:text-gray-100 border-t border-gray-200 dark:border-gray-700 pt-8">Datos Comerciales</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="col-span-1 sm:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Título de la Publicación (Opcional)</label>
+                <input type="text" name="tituloPublicacion" value={formData.comercial.tituloPublicacion} onChange={handleComercialChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="Ej: Toyota Yaris 1.5 GLI AT Excelente Estado" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Precio ($) (Opcional)</label>
+                <input type="number" name="precio" value={formData.comercial.precio} onChange={handleComercialChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="Ej: 12500000" />
+              </div>
+              <div className="flex items-center sm:mt-6">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <div className="relative">
+                    <input type="checkbox" name="masIva" checked={formData.comercial.masIva} onChange={handleComercialChange} className="sr-only" />
+                    <div className={`block w-14 h-8 rounded-full transition-colors ${formData.comercial.masIva ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-gray-600'}`}></div>
+                    <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${formData.comercial.masIva ? 'transform translate-x-6' : ''}`}></div>
+                  </div>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Aplica +IVA</span>
+                </label>
+              </div>
+              <div className="col-span-1 sm:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Descripción (Opcional)</label>
+                <textarea name="descripcion" value={formData.comercial.descripcion} onChange={handleComercialChange} rows={4} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors resize-none" placeholder="Detalles, estado general, equipamiento adicional..."></textarea>
               </div>
             </div>
           </div>

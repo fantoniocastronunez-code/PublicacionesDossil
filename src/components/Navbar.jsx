@@ -9,9 +9,9 @@ export default function Navbar() {
     <nav className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
-          <Link to="/" className="flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-            <CarFront className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
-            <span>Dossil Autos</span>
+          <Link to="/" className="flex items-center gap-3 text-xl font-bold text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+            <img src="/LOGO.gif" alt="Dossil Automotriz Logo" className="h-10 w-auto rounded object-contain" />
+            <span>Dossil Automotriz</span>
           </Link>
           <div className="flex items-center gap-4">
             <button 

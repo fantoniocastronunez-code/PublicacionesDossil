@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Search, Loader2 } from 'lucide-react';
-import VehicleCard from '../components/VehicleCard';
+import { Link } from 'react-router-dom';
 import { useVehicleStore } from '../store/useVehicleStore';
+import VehicleCard from '../components/VehicleCard';
+import { Plus, Search, RefreshCw } from 'lucide-react';
 
 export default function Home() {
-  const { vehiculos, fetchVehiculos, loading, error } = useVehicleStore();
+  const { vehiculos, fetchVehiculos, loading } = useVehicleStore();
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
@@ -15,19 +16,32 @@ export default function Home() {
     v.patente.toLowerCase().includes(searchTerm.toLowerCase()) ||
     v.fichaTecnica?.marca?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     v.fichaTecnica?.modelo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    v.fichaTecnica?.version?.toLowerCase().includes(searchTerm.toLowerCase())
+    v.fichaTecnica?.version?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    v.comercial?.tituloPublicacion?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="text-center max-w-3xl mx-auto mb-16">
-        <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-6 transition-colors">
-          Gestión de <span className="text-indigo-600 dark:text-indigo-400">Vehículos</span>
-        </h1>
-        <p className="text-xl text-gray-500 dark:text-gray-400 mb-8 transition-colors">
-          Busca por patente, marca o modelo para acceder rápidamente a la ficha técnica de tus vehículos.
-        </p>
-        
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 transition-colors">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+        <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">Stock Actualizado</h1>
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <button 
+            onClick={() => fetchVehiculos()} 
+            disabled={loading}
+            className="flex items-center justify-center gap-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 px-4 py-2.5 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors font-semibold border border-gray-200 dark:border-gray-700 disabled:opacity-50"
+            title="Actualizar stock"
+          >
+            <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin text-indigo-600' : ''}`} />
+            <span className="hidden sm:inline">Actualizar</span>
+          </button>
+          
+          <Link to="/agregar" className="flex items-center justify-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-xl hover:bg-indigo-700 transition-all font-semibold shadow-sm hover:shadow flex-1 sm:flex-none">
+            <Plus className="w-5 h-5" /> Nuevo Vehículo
+          </Link>
+        </div>
+      </div>
+
+      <div className="mb-8">
         <div className="relative max-w-2xl mx-auto shadow-sm rounded-2xl overflow-hidden focus-within:shadow-md transition-shadow">
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
             <Search className="h-6 w-6 text-gray-400 dark:text-gray-500" />

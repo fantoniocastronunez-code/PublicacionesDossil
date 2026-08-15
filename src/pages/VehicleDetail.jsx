@@ -26,6 +26,9 @@ export default function VehicleDetail() {
     );
   }
 
+  const titulo = vehiculo.comercial?.tituloPublicacion || `${vehiculo.fichaTecnica?.marca} ${vehiculo.fichaTecnica?.modelo}`;
+  const precioFormatted = vehiculo.comercial?.precio ? new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(vehiculo.comercial.precio) : null;
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 transition-colors">
       <div className="flex justify-between items-center mb-8">
@@ -62,10 +65,18 @@ export default function VehicleDetail() {
         {/* Columna Derecha: Información */}
         <div className="space-y-6">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 transition-colors">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              {vehiculo.fichaTecnica?.marca} {vehiculo.fichaTecnica?.modelo}
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 leading-tight">
+              {titulo}
             </h1>
-            <div className="flex items-center gap-3 mb-6">
+            
+            {precioFormatted && (
+              <div className="flex items-end gap-3 mb-4">
+                <span className="text-4xl font-black text-indigo-600 dark:text-indigo-400">{precioFormatted}</span>
+                {vehiculo.comercial?.masIva && <span className="text-sm font-bold bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 px-3 py-1 rounded-full mb-1.5">+ IVA</span>}
+              </div>
+            )}
+
+            <div className="flex items-center gap-3 mb-6 mt-2">
               <span className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-1 rounded-md font-mono font-bold border border-gray-200 dark:border-gray-600">
                 {vehiculo.patente}
               </span>
@@ -76,6 +87,7 @@ export default function VehicleDetail() {
               <h3 className="font-semibold flex items-center gap-2 text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-700 pb-2">
                 <FileText className="w-5 h-5 text-indigo-600 dark:text-indigo-400" /> Ficha Técnica
               </h3>
+
               
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
@@ -104,6 +116,17 @@ export default function VehicleDetail() {
                 </div>
               </div>
             </div>
+
+            {vehiculo.comercial?.descripcion && (
+              <div className="mt-8 space-y-4">
+                <h3 className="font-semibold flex items-center gap-2 text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-700 pb-2">
+                  <FileText className="w-5 h-5 text-indigo-600 dark:text-indigo-400" /> Descripción
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300 whitespace-pre-wrap leading-relaxed text-sm">
+                  {vehiculo.comercial.descripcion}
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 transition-colors">
