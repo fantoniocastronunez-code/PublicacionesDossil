@@ -101,7 +101,7 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
 
 ☎️ ➕️5️⃣6️⃣9️⃣6️⃣3️⃣6️⃣2️⃣2️⃣8️⃣1️⃣2️⃣`;
 
-  const CopyField = ({ label, value, fieldId, isTextArea = false }) => (
+  const CopyField = ({ label, value, fieldId, isTextArea = false, isSmallArea = false }) => (
     <div className="mb-4">
       <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">{label}</label>
       <div className="flex gap-2">
@@ -109,7 +109,7 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
           <textarea 
             readOnly 
             value={value} 
-            className="flex-1 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-900 dark:text-gray-100 min-h-[250px] resize-y"
+            className={`flex-1 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-900 dark:text-gray-100 resize-y font-mono text-sm ${isSmallArea ? 'h-28' : 'min-h-[250px]'}`}
           />
         ) : (
           <input 
@@ -171,10 +171,13 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
 
             {vehiculo.comercial?.masIva ? (
               <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-xl mb-4 border border-yellow-200 dark:border-yellow-800/30">
-                <p className="text-sm font-bold text-yellow-800 dark:text-yellow-400 mb-3">Vehículo con Factura (+ IVA)</p>
-                <CopyField label="Valor Neto" value={formatCurrency(precioBase)} fieldId="neto" />
-                <CopyField label="Monto IVA (19%)" value={formatCurrency(iva)} fieldId="iva" />
-                <CopyField label="Valor Total (Neto + IVA)" value={formatCurrency(total)} fieldId="total" />
+                <CopyField 
+                  label="Vehículo con Factura (+ IVA)" 
+                  value={`VALOR NETO:     ${formatCurrency(precioBase)}\nIVA:            ${formatCurrency(iva)}\nVALOR + IVA:    ${formatCurrency(total)}`} 
+                  fieldId="precio_iva" 
+                  isTextArea={true} 
+                  isSmallArea={true}
+                />
               </div>
             ) : (
               <CopyField label="Precio" value={formatCurrency(precioBase)} fieldId="precio" />
