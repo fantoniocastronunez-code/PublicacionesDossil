@@ -22,23 +22,8 @@ export default function Home() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 transition-colors">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+      <div className="mb-8">
         <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">Stock Actualizado</h1>
-        <div className="flex items-center gap-3 w-full sm:w-auto">
-          <button 
-            onClick={() => fetchVehiculos()} 
-            disabled={loading}
-            className="flex items-center justify-center gap-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 px-4 py-2.5 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors font-semibold border border-gray-200 dark:border-gray-700 disabled:opacity-50"
-            title="Actualizar stock"
-          >
-            <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin text-indigo-600' : ''}`} />
-            <span className="hidden sm:inline">Actualizar</span>
-          </button>
-          
-          <Link to="/agregar" className="flex items-center justify-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-xl hover:bg-indigo-700 transition-all font-semibold shadow-sm hover:shadow flex-1 sm:flex-none">
-            <Plus className="w-5 h-5" /> Nuevo Vehículo
-          </Link>
-        </div>
       </div>
 
       <div className="mb-8">
