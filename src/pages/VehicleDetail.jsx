@@ -1,0 +1,130 @@
+import { useParams, Link } from 'react-router-dom';
+import { ArrowLeft, CarFront, FileText, Calendar, KeyRound, Globe, ExternalLink, Hash, Loader2 } from 'lucide-react';
+import { useVehicleStore } from '../store/useVehicleStore';
+
+export default function VehicleDetail() {
+  const { id } = useParams();
+  const { vehiculos, loading } = useVehicleStore();
+  
+  const vehiculo = vehiculos.find(v => v.id === id);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-96">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+      </div>
+    );
+  }
+
+  if (!vehiculo) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-20 text-center">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Vehículo no encontrado</h2>
+        <p className="text-gray-500 dark:text-gray-400 mb-6">El vehículo que buscas no existe o ha sido eliminado.</p>
+        <Link to="/" className="text-indigo-600 dark:text-indigo-400 font-medium hover:underline">Volver al inicio</Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 transition-colors">
+      <Link to="/" className="inline-flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-8 transition-colors">
+        <ArrowLeft className="w-5 h-5" /> Volver al inventario
+      </Link>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* Columna Izquierda: Fotos */}
+        <div className="lg:col-span-2 space-y-4">
+          <div className="aspect-[16/9] rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
+            <img 
+              src={vehiculo.fotos?.[0] || 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&q=80&w=1200'} 
+              alt="Vehículo principal" 
+              className="w-full h-full object-cover"
+            />
+          </div>
+          {vehiculo.fotos && vehiculo.fotos.length > 1 && (
+            <div className="grid grid-cols-4 gap-4">
+              {vehiculo.fotos.slice(1).map((foto, idx) => (
+                <div key={idx} className="aspect-[4/3] rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
+                  <img src={foto} alt={`Vista ${idx + 2}`} className="w-full h-full object-cover" />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Columna Derecha: Información */}
+        <div className="space-y-6">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 transition-colors">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              {vehiculo.fichaTecnica?.marca} {vehiculo.fichaTecnica?.modelo}
+            </h1>
+            <div className="flex items-center gap-3 mb-6">
+              <span className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-1 rounded-md font-mono font-bold border border-gray-200 dark:border-gray-600">
+                {vehiculo.patente}
+              </span>
+              <span className="text-gray-500 dark:text-gray-400">Patente registrada</span>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="font-semibold flex items-center gap-2 text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-700 pb-2">
+                <FileText className="w-5 h-5 text-indigo-600 dark:text-indigo-400" /> Ficha Técnica
+              </h3>
+              
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-gray-500 dark:text-gray-400 flex items-center gap-1"><Calendar className="w-4 h-4"/> Año</p>
+                  <p className="font-semibold text-gray-900 dark:text-gray-100">{vehiculo.fichaTecnica?.anio}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500 dark:text-gray-400 flex items-center gap-1"><CarFront className="w-4 h-4"/> Marca</p>
+                  <p className="font-semibold text-gray-900 dark:text-gray-100">{vehiculo.fichaTecnica?.marca}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500 dark:text-gray-400 flex items-center gap-1"><Hash className="w-4 h-4"/> VIN</p>
+                  <p className="font-semibold text-gray-900 dark:text-gray-100 font-mono text-xs mt-1">{vehiculo.fichaTecnica?.vin}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500 dark:text-gray-400 flex items-center gap-1"><KeyRound className="w-4 h-4"/> N° Motor</p>
+                  <p className="font-semibold text-gray-900 dark:text-gray-100 font-mono text-xs mt-1">
+                    {vehiculo.fichaTecnica?.numeroMotor || <span className="text-yellow-600 dark:text-yellow-500">Pendiente</span>}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 transition-colors">
+            <h3 className="font-semibold flex items-center gap-2 text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-700 pb-2 mb-4">
+              <Globe className="w-5 h-5 text-indigo-600 dark:text-indigo-400" /> Enlaces de Publicación
+            </h3>
+            <div className="space-y-3">
+              {['webNativa', 'mercadoLibre', 'autosUsados', 'fbMarketplace'].map(plataforma => {
+                const url = vehiculo.publicaciones?.[plataforma];
+                const labels = {
+                  webNativa: 'Web Dossil',
+                  mercadoLibre: 'Mercado Libre',
+                  autosUsados: 'AutosUsados.cl',
+                  fbMarketplace: 'FB Marketplace'
+                };
+                
+                return url ? (
+                  <a key={plataforma} href={url} target="_blank" rel="noreferrer" className="flex items-center justify-between p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 hover:bg-indigo-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:text-indigo-700 dark:hover:text-white transition-colors group">
+                    <span className="font-medium">{labels[plataforma]}</span>
+                    <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400" />
+                  </a>
+                ) : (
+                  <div key={plataforma} className="flex items-center justify-between p-3 rounded-lg border border-dashed border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 text-gray-400 dark:text-gray-500">
+                    <span>{labels[plataforma]}</span>
+                    <span className="text-xs font-medium px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded">No pub.</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
