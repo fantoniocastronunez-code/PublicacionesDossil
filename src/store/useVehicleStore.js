@@ -107,6 +107,27 @@ export const useVehicleStore = create((set, get) => ({
     }
   },
 
+  deleteMultipleVehiculos: async (idsArray) => {
+    set({ loading: true, error: null });
+    try {
+      const batch = writeBatch(db);
+      for (const id of idsArray) {
+        const vehiculoRef = doc(db, "vehiculos", id);
+        batch.delete(vehiculoRef);
+      }
+      await withTimeout(batch.commit());
+      
+      set(state => ({
+        vehiculos: state.vehiculos.filter(v => !idsArray.includes(v.id)),
+        loading: false
+      }));
+    } catch (error) {
+      console.error("Error al eliminar múltiples vehículos: ", error);
+      set({ error: error.message, loading: false });
+      throw error;
+    }
+  },
+
   updateVehiculo: async (id, datosActualizados, imagenes) => {
     set({ loading: true, error: null });
     try {

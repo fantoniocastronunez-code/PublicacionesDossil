@@ -132,25 +132,34 @@ export default function AddVehicle() {
     setImagenes(prev => prev.filter((_, i) => i !== index));
   };
 
-  const procesarJSONExcel = async (jsonData) => {
-    const vehiculosToUpload = jsonData.map(row => {
+  const procesarJSONExcel = async (rows) => {
+    if (!rows || rows.length < 2) {
+      throw new Error("El archivo está vacío o no tiene el formato correcto.");
+    }
+
+    const dataRows = rows.slice(1).filter(row => row && row.length > 0 && row.some(cell => cell !== undefined && cell !== null && String(cell).trim() !== ''));
+
+    const vehiculosToUpload = dataRows.map(row => {
+      let precioRaw = String(row[7] || '');
+      let precioLimpio = precioRaw.replace(/[^0-9]/g, '');
+
       return {
-        patente: String(row.Patente || '').toUpperCase(),
+        patente: String(row[6] || '').toUpperCase().trim(),
         fichaTecnica: {
-          categoria: row.Categoria || 'Liviano',
-          tipoVehiculo: row.Tipo || 'Auto (Sedán/Hatchback)',
-          marca: String(row.Marca || ''),
-          modelo: String(row.Modelo || ''),
-          version: String(row.Version || ''),
-          anio: String(row.Anio || ''),
-          vin: String(row.Vin || ''),
-          numeroMotor: String(row.NumeroMotor || '')
+          categoria: String(row[3] || 'Liviano').toUpperCase().trim() === 'PESADO' ? 'Pesado' : 'Liviano',
+          tipoVehiculo: String(row[4] || '').trim(),
+          marca: String(row[0] || '').trim(),
+          modelo: String(row[1] || '').trim(),
+          version: String(row[5] || '').trim(),
+          anio: String(row[2] || '').trim(),
+          vin: String(row[11] || '').trim(),
+          numeroMotor: String(row[12] || '').trim()
         },
         comercial: {
-          tituloPublicacion: String(row.TituloPublicacion || ''),
-          descripcion: String(row.Descripcion || ''),
-          precio: String(row.Precio || ''),
-          masIva: String(row.MasIVA || '').toUpperCase() === 'SI'
+          tituloPublicacion: String(row[9] || '').trim(),
+          descripcion: String(row[10] || '').trim(),
+          precio: precioLimpio,
+          masIva: String(row[8] || '').toUpperCase().trim() === 'SI'
         },
         publicaciones: {
           webNativa: '',
@@ -162,7 +171,7 @@ export default function AddVehicle() {
     });
 
     if (vehiculosToUpload.length === 0) {
-      throw new Error("El archivo está vacío o no se pudo leer correctamente.");
+      throw new Error("No se encontraron vehículos válidos en el archivo.");
     }
 
     await addMultipleVehiculos(vehiculosToUpload);
@@ -193,9 +202,9 @@ export default function AddVehicle() {
       const workbook = XLSX.read(data, { type: 'array' });
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet);
+      const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-      const count = await procesarJSONExcel(jsonData);
+      const count = await procesarJSONExcel(rows);
       alert(`¡Carga exitosa! Se agregaron ${count} vehículos desde Google Sheets.`);
       navigate('/');
 
@@ -216,9 +225,9 @@ export default function AddVehicle() {
       const workbook = XLSX.read(data, { type: 'array' });
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet);
+      const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-      const count = await procesarJSONExcel(jsonData);
+      const count = await procesarJSONExcel(rows);
       alert(`¡Carga masiva exitosa! Se agregaron ${count} vehículos al inventario.`);
       navigate('/');
 

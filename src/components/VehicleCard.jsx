@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { CarFront, Calendar, KeyRound, ExternalLink, Globe, Hash, Share2 } from 'lucide-react';
 
-export default function VehicleCard({ vehiculo }) {
+export default function VehicleCard({ vehiculo, selectable = false, isSelected = false, onSelect = () => {} }) {
   const linksActivos = Object.values(vehiculo.publicaciones || {}).filter(url => url).length;
   const imagenPrincipal = vehiculo.fotos?.[0] || 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&q=80&w=400';
   
@@ -9,7 +9,19 @@ export default function VehicleCard({ vehiculo }) {
   const precioFormatted = vehiculo.comercial?.precio ? new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(vehiculo.comercial.precio) : null;
 
   return (
-    <div className="group bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-300 flex flex-col h-full transform hover:-translate-y-1">
+    <div className={`group relative bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-xl border overflow-hidden transition-all duration-300 flex flex-col h-full transform hover:-translate-y-1 ${isSelected ? 'border-red-500 ring-2 ring-red-500 ring-opacity-50' : 'border-gray-200 dark:border-gray-700'}`}>
+      
+      {selectable && (
+        <div className="absolute top-3 left-3 z-10">
+          <input 
+            type="checkbox" 
+            checked={isSelected}
+            onChange={() => onSelect(vehiculo.id)}
+            className="w-6 h-6 rounded text-red-600 focus:ring-red-500 border-gray-300 cursor-pointer shadow-sm"
+          />
+        </div>
+      )}
+
       <Link to={`/vehiculo/${vehiculo.id}`} className="relative aspect-[4/3] overflow-hidden bg-gray-100 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 block">
         <img 
           src={imagenPrincipal}
