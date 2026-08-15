@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useVehicleStore } from '../store/useVehicleStore';
-import { ArrowLeft, Copy, CheckCircle2, Share2, Save, Globe, Facebook, Car, Store } from 'lucide-react';
+import { ArrowLeft, Copy, CheckCircle2, Share2, Save, Globe, ShoppingBag, Car, Store } from 'lucide-react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../config/firebase';
 
@@ -220,7 +220,7 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
             
             <div>
               <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                <Facebook className="w-4 h-4 text-blue-600" /> FB Marketplace
+                <ShoppingBag className="w-4 h-4 text-blue-600" /> FB Marketplace
               </label>
               <input type="url" name="fbMarketplace" value={links.fbMarketplace} onChange={handleLinkChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none" placeholder="https://facebook.com/marketplace/..." />
             </div>
