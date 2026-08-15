@@ -271,14 +271,14 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
           <div className="p-6 space-y-4">
             <div>
               <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                <Globe className="w-4 h-4 text-blue-500" /> Web Nativa
+                <img src="/LOGO.gif" alt="Portal Dossil" className="h-5 w-auto object-contain" /> Portal Dossil
               </label>
               <input type="url" name="webNativa" value={links.webNativa} onChange={handleLinkChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none" placeholder="https://dossil.cl/..." />
             </div>
             
             <div>
               <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                <Store className="w-4 h-4 text-yellow-500" /> Mercado Libre
+                <img src="/Cliente-Logo-Mercado-Libre.png" alt="Mercado Libre" className="h-5 w-auto object-contain" /> Mercado Libre
               </label>
               <input type="url" name="mercadoLibre" value={links.mercadoLibre} onChange={handleLinkChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none" placeholder="https://auto.mercadolibre.cl/..." />
             </div>
@@ -292,7 +292,7 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
             
             <div>
               <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                <ShoppingBag className="w-4 h-4 text-blue-600" /> FB Marketplace
+                <img src="/marketplace-logo.png" alt="Facebook Marketplace" className="h-5 w-auto object-contain" /> Facebook Marketplace
               </label>
               <input type="url" name="fbMarketplace" value={links.fbMarketplace} onChange={handleLinkChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none" placeholder="https://facebook.com/marketplace/..." />
             </div>
@@ -352,16 +352,18 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
 
             <div className="space-y-4 relative z-10 bg-white/50 dark:bg-gray-800/50 p-2 rounded-[20px]">
               <StatusRow 
-                icon={<Globe className="w-6 h-6" />} 
-                name="Web Nativa Dossil" 
+                icon={<img src="/LOGO.gif" alt="Portal Dossil" className="h-8 w-auto object-contain drop-shadow-sm" />} 
+                name="Portal Dossil" 
                 hasLink={!!links.webNativa} 
                 color="blue"
+                isCustomIcon={true}
               />
               <StatusRow 
-                icon={<Store className="w-6 h-6" />} 
+                icon={<img src="/Cliente-Logo-Mercado-Libre.png" alt="Mercado Libre" className="h-8 w-auto object-contain drop-shadow-sm" />} 
                 name="Mercado Libre" 
                 hasLink={!!links.mercadoLibre} 
                 color="yellow"
+                isCustomIcon={true}
               />
               <StatusRow 
                 icon={<img src="/autosusados-logo.png" alt="autosusados.cl" className="h-8 w-auto object-contain drop-shadow-sm" />} 
@@ -371,10 +373,11 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
                 isCustomIcon={true}
               />
               <StatusRow 
-                icon={<ShoppingBag className="w-6 h-6" />} 
+                icon={<img src="/marketplace-logo.png" alt="Facebook Marketplace" className="h-8 w-auto object-contain drop-shadow-sm" />} 
                 name="Facebook Marketplace" 
                 hasLink={!!links.fbMarketplace} 
                 color="indigo"
+                isCustomIcon={true}
               />
             </div>
 
