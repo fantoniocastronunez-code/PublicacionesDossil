@@ -65,10 +65,18 @@ export default function PublishVehicle() {
       const element = cardRef.current;
       const blob = await htmlToImage.toBlob(element, {
         pixelRatio: 2, // Mejor calidad
+        width: 600,
         style: {
           transform: 'scale(1)',
           transformOrigin: 'top left',
           margin: '0',
+          width: '600px', // Forzar anchura en la imagen generada
+          minWidth: '600px'
+        },
+        onclone: (clonedNode) => {
+          clonedNode.style.width = '600px';
+          clonedNode.style.minWidth = '600px';
+          clonedNode.style.maxWidth = '600px';
         }
       });
       if (blob) {
@@ -336,10 +344,10 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
           </button>
         </div>
         
-        <div className="overflow-x-auto pb-4 flex justify-center">
+        <div className="pb-4">
           <div 
             ref={cardRef} 
-            className="bg-white dark:bg-gray-800 rounded-[24px] shadow-sm border border-gray-200 dark:border-gray-700 p-8 w-[600px] min-w-[600px] shrink-0 relative overflow-hidden"
+            className="bg-white dark:bg-gray-800 rounded-[24px] shadow-sm border border-gray-200 dark:border-gray-700 p-6 sm:p-8 w-full max-w-2xl mx-auto relative overflow-hidden"
           >
             {/* Decoración de fondo */}
             <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl -mr-10 -mt-10"></div>
