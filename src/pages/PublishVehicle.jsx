@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useVehicleStore } from '../store/useVehicleStore';
-import { ArrowLeft, Copy, CheckCircle2, Share2, Save, Globe, ShoppingBag, Car, Store } from 'lucide-react';
+import { ArrowLeft, Copy, CheckCircle2, Share2, Save, Globe, ShoppingBag, Car, Store, XCircle, Camera, Image as ImageIcon } from 'lucide-react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../config/firebase';
+import * as htmlToImage from 'html-to-image';
 
 export default function PublishVehicle() {
   const { id } = useParams();
@@ -11,6 +12,9 @@ export default function PublishVehicle() {
   const vehiculo = vehiculos.find(v => v.id === id);
   const [copiedField, setCopiedField] = useState(null);
   
+  const cardRef = useRef(null);
+  const [copyingImage, setCopyingImage] = useState(false);
+
   // Links state
   const [links, setLinks] = useState({
     webNativa: '',
@@ -50,6 +54,33 @@ export default function PublishVehicle() {
       alert("Error al guardar los links");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const copyImageToClipboard = async () => {
+    if (!cardRef.current) return;
+    setCopyingImage(true);
+    try {
+      const blob = await htmlToImage.toBlob(cardRef.current, {
+        backgroundColor: '#ffffff',
+        style: {
+          transform: 'scale(1)',
+          borderRadius: '24px',
+        }
+      });
+      if (blob) {
+        await navigator.clipboard.write([
+          new window.ClipboardItem({
+            'image/png': blob
+          })
+        ]);
+        alert("¡Imagen copiada al portapapeles! Puedes pegarla en cualquier chat para reportar que está lista.");
+      }
+    } catch (err) {
+      console.error('Error al copiar la imagen', err);
+      alert("No se pudo copiar la imagen automáticamente, por favor toma una captura de pantalla normal.");
+    } finally {
+      setCopyingImage(false);
     }
   };
 
@@ -100,6 +131,41 @@ CONTAMOS CON CRÉDITO DIRECTO Y CRÉDITO EXTERNO CON LAS MEJORES ENTIDADES FINAN
 AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
 
 ☎️ ➕️5️⃣6️⃣9️⃣6️⃣3️⃣6️⃣2️⃣2️⃣8️⃣1️⃣2️⃣`;
+
+  const StatusRow = ({ icon, name, hasLink, color }) => {
+    const bgColors = {
+      blue: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
+      yellow: 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400',
+      red: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400',
+      indigo: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400',
+    };
+    
+    return (
+      <div className={`flex items-center justify-between p-4 rounded-2xl border transition-colors ${hasLink ? 'bg-green-50/50 border-green-200 dark:bg-green-900/20 dark:border-green-900/40' : 'bg-gray-50/50 border-gray-200 dark:bg-gray-800/50 dark:border-gray-700'}`}>
+        <div className="flex items-center gap-4">
+          <div className={`p-3 rounded-xl ${bgColors[color]}`}>
+            {icon}
+          </div>
+          <span className={`font-bold ${hasLink ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
+            {name}
+          </span>
+        </div>
+        <div>
+          {hasLink ? (
+            <div className="flex items-center gap-2 text-green-700 dark:text-green-400 font-bold bg-green-100 dark:bg-green-900/40 px-3 py-1.5 rounded-lg shadow-sm">
+              <CheckCircle2 className="w-5 h-5" />
+              <span className="text-sm">Lista</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 font-bold bg-gray-200 dark:bg-gray-700 px-3 py-1.5 rounded-lg shadow-sm">
+              <XCircle className="w-5 h-5" />
+              <span className="text-sm">Pendiente</span>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   const CopyField = ({ label, value, fieldId, isTextArea = false, isSmallArea = false }) => (
     <div className="mb-4">
@@ -247,6 +313,76 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
         </div>
 
       </div>
+
+      {/* NUEVA SECCION: TARJETA DE ESTADO (Para copiar como imagen) */}
+      <div className="mt-12 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+            <div className="p-2 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg text-indigo-600 dark:text-indigo-400">
+              <ImageIcon className="w-6 h-6" />
+            </div>
+            Reporte de Publicaciones
+          </h2>
+          <button 
+            onClick={copyImageToClipboard}
+            disabled={copyingImage}
+            className="mt-4 sm:mt-0 flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-xl font-bold transition-all disabled:opacity-70 shadow-sm hover:shadow-md active:scale-95 cursor-pointer"
+          >
+            <Camera className="w-5 h-5" />
+            {copyingImage ? 'Generando Imagen...' : 'Copiar Reporte como Imagen'}
+          </button>
+        </div>
+        
+        <div className="overflow-x-auto pb-4">
+          <div 
+            ref={cardRef} 
+            className="bg-white dark:bg-gray-800 rounded-[24px] shadow-sm border border-gray-200 dark:border-gray-700 p-8 w-full max-w-2xl mx-auto relative overflow-hidden"
+          >
+            {/* Decoración de fondo */}
+            <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl -mr-10 -mt-10"></div>
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl -ml-10 -mb-10"></div>
+            
+            <div className="relative z-10 text-center mb-8">
+              <h3 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">Estado de Publicación</h3>
+              <p className="text-gray-600 dark:text-gray-300 font-bold text-lg mt-2">{titulo}</p>
+            </div>
+
+            <div className="space-y-4 relative z-10 bg-white/50 dark:bg-gray-800/50 p-2 rounded-[20px]">
+              <StatusRow 
+                icon={<Globe className="w-6 h-6" />} 
+                name="Web Nativa Dossil" 
+                hasLink={!!links.webNativa} 
+                color="blue"
+              />
+              <StatusRow 
+                icon={<Store className="w-6 h-6" />} 
+                name="Mercado Libre / Chileautos" 
+                hasLink={!!links.mercadoLibre} 
+                color="yellow"
+              />
+              <StatusRow 
+                icon={<Car className="w-6 h-6" />} 
+                name="Autos Usados" 
+                hasLink={!!links.autosUsados} 
+                color="red"
+              />
+              <StatusRow 
+                icon={<ShoppingBag className="w-6 h-6" />} 
+                name="Facebook Marketplace" 
+                hasLink={!!links.fbMarketplace} 
+                color="indigo"
+              />
+            </div>
+
+            <div className="mt-8 text-center border-t border-gray-200 dark:border-gray-700 pt-6 relative z-10">
+              <p className="text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest flex items-center justify-center gap-2">
+                <Store className="w-4 h-4" /> Automotriz Dossil
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 }
