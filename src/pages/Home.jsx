@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useVehicleStore } from '../store/useVehicleStore';
 import VehicleCard from '../components/VehicleCard';
-import { Plus, Search, RefreshCw, CheckSquare, Trash2, X } from 'lucide-react';
+import { Plus, Search, RefreshCw, CheckSquare, Trash2, X, ArrowDownUp } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 export default function Home() {
@@ -10,6 +10,8 @@ export default function Home() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState([]);
+  const [sortBy, setSortBy] = useState('fecha');
+  const [sortOrder, setSortOrder] = useState('desc');
 
   useEffect(() => {
     fetchVehiculos();
@@ -61,6 +63,24 @@ export default function Home() {
     v.comercial?.tituloPublicacion?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const sortedVehiculos = [...filteredVehiculos].sort((a, b) => {
+    let comparison = 0;
+    if (sortBy === 'fecha') {
+      const dateA = new Date(a.fechaIngreso || 0).getTime();
+      const dateB = new Date(b.fechaIngreso || 0).getTime();
+      comparison = dateA - dateB;
+    } else if (sortBy === 'precio') {
+      const priceA = Number(a.comercial?.precio) || 0;
+      const priceB = Number(b.comercial?.precio) || 0;
+      comparison = priceA - priceB;
+    } else if (sortBy === 'marca') {
+      const marcaA = (a.fichaTecnica?.marca || '').toLowerCase();
+      const marcaB = (b.fichaTecnica?.marca || '').toLowerCase();
+      comparison = marcaA.localeCompare(marcaB);
+    }
+    return sortOrder === 'asc' ? comparison : -comparison;
+  });
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 transition-colors">
       <div className="mb-8">
@@ -87,10 +107,33 @@ export default function Home() {
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
             {searchTerm ? 'Resultados de búsqueda' : 'Últimos ingresos'}
           </h2>
-          <span className="text-gray-500 dark:text-gray-400 font-medium">{filteredVehiculos.length} vehículos</span>
+          <span className="text-gray-500 dark:text-gray-400 font-medium">{sortedVehiculos.length} vehículos</span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1 sm:mr-2">
+            <div className="flex items-center px-2 text-gray-500 dark:text-gray-400">
+              <ArrowDownUp className="w-4 h-4 mr-1" />
+              <span className="text-sm font-medium hidden sm:inline">Ordenar:</span>
+            </div>
+            <select 
+              value={sortBy} 
+              onChange={(e) => setSortBy(e.target.value)}
+              className="bg-transparent text-sm font-bold text-gray-700 dark:text-gray-300 outline-none cursor-pointer py-1"
+            >
+              <option value="fecha" className="text-gray-900">Fecha</option>
+              <option value="precio" className="text-gray-900">Precio</option>
+              <option value="marca" className="text-gray-900">Marca</option>
+            </select>
+            <button 
+              onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+              className="px-2 py-1 ml-1 text-xs font-bold bg-white dark:bg-gray-700 rounded shadow-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+              title="Cambiar orden ascendente/descendente"
+            >
+              {sortOrder === 'asc' ? 'ASC' : 'DESC'}
+            </button>
+          </div>
+
           {isSelectionMode ? (
             <>
               <span className="text-sm font-medium text-gray-500 mr-2">{selectedIds.length} seleccionados</span>
@@ -119,9 +162,9 @@ export default function Home() {
         </div>
       </div>
 
-      {filteredVehiculos.length > 0 ? (
+      {sortedVehiculos.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredVehiculos.map(vehiculo => (
+          {sortedVehiculos.map(vehiculo => (
             <VehicleCard 
               key={vehiculo.id} 
               vehiculo={vehiculo} 
