@@ -81,6 +81,7 @@ export default function PublishVehicle() {
       const element = cardRef.current;
       const blob = await htmlToImage.toBlob(element, {
         pixelRatio: 2, // Mejor calidad
+        backgroundColor: 'transparent',
         style: {
           transform: 'scale(1)',
           transformOrigin: 'top left',
