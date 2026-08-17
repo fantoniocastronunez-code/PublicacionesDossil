@@ -144,6 +144,9 @@ export default function PublishVehicle() {
   const modelo = vehiculo.fichaTecnica?.modelo || '';
   const version = vehiculo.fichaTecnica?.version || '';
   const anio = vehiculo.fichaTecnica?.anio || '';
+  const patente = vehiculo.patente || '';
+  const vin = vehiculo.fichaTecnica?.vin || '';
+  const numeroMotor = vehiculo.fichaTecnica?.numeroMotor || '';
   
   const precioBase = Number(vehiculo.comercial?.precio) || 0;
   let iva = 0;
@@ -318,6 +321,15 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <CopyField label="Versión" value={version} fieldId="version" />
               <CopyField label="Año" value={anio} fieldId="anio" />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <CopyField label="Patente" value={patente} fieldId="patente" />
+              <CopyField label="VIN" value={vin} fieldId="vin" />
+            </div>
+
+            <div className="mb-4">
+              <CopyField label="Número de Motor" value={numeroMotor} fieldId="numeroMotor" />
             </div>
 
             {vehiculo.comercial?.masIva ? (
