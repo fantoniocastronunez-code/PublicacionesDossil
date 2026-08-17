@@ -5,6 +5,7 @@ import { ArrowLeft, Copy, CheckCircle2, Share2, Save, Globe, ShoppingBag, Car, S
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import * as htmlToImage from 'html-to-image';
+import Swal from 'sweetalert2';
 
 export default function PublishVehicle() {
   const { id } = useParams();
@@ -49,9 +50,25 @@ export default function PublishVehicle() {
       await fetchVehiculos(); // Refresh store
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
+      
+      const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+          toast.onmouseenter = Swal.stopTimer;
+          toast.onmouseleave = Swal.resumeTimer;
+        }
+      });
+      Toast.fire({
+        icon: 'success',
+        title: 'Links guardados correctamente'
+      });
     } catch (error) {
       console.error("Error saving links", error);
-      alert("Error al guardar los links");
+      Swal.fire('Error', 'Error al guardar los links', 'error');
     } finally {
       setSaving(false);
     }
@@ -76,11 +93,27 @@ export default function PublishVehicle() {
             'image/png': blob
           })
         ]);
-        alert("¡Imagen copiada al portapapeles! Puedes pegarla en cualquier chat para reportar que está lista.");
+        const Toast = Swal.mixin({
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 4000,
+          timerProgressBar: true
+        });
+        Toast.fire({
+          icon: 'success',
+          title: '¡Imagen copiada!',
+          text: 'Puedes pegarla en cualquier chat.'
+        });
       }
     } catch (err) {
       console.error('Error al copiar la imagen', err);
-      alert("No se pudo copiar la imagen automáticamente, por favor toma una captura de pantalla normal.");
+      Swal.fire({
+        title: 'Error al copiar',
+        text: 'No se pudo copiar la imagen automáticamente, por favor toma una captura de pantalla normal.',
+        icon: 'error',
+        confirmButtonColor: '#4f46e5'
+      });
     } finally {
       setCopyingImage(false);
     }

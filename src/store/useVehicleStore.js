@@ -33,7 +33,7 @@ export const useVehicleStore = create((set, get) => ({
     }
   },
 
-  addVehiculo: async (nuevoVehiculo, imagenes) => {
+  addVehiculo: async (nuevoVehiculo, imagenes, documentoPdf) => {
     set({ loading: true, error: null });
     try {
       // 1. Procesar todas las fotos en el orden exacto
@@ -51,10 +51,18 @@ export const useVehicleStore = create((set, get) => ({
         }
       }
 
+      let urlDocumento = null;
+      if (documentoPdf && documentoPdf.file) {
+        const docRefStorage = ref(storage, `vehiculos/docs/${uuidv4()}_${documentoPdf.file.name}`);
+        await withTimeout(uploadBytes(docRefStorage, documentoPdf.file));
+        urlDocumento = await withTimeout(getDownloadURL(docRefStorage));
+      }
+
       // 2. Guardar datos en Firestore
       const vehiculoParaGuardar = {
         ...nuevoVehiculo,
         fotos: urlsFotos,
+        documento: urlDocumento,
         fechaIngreso: serverTimestamp()
       };
       
@@ -128,7 +136,7 @@ export const useVehicleStore = create((set, get) => ({
     }
   },
 
-  updateVehiculo: async (id, datosActualizados, imagenes) => {
+  updateVehiculo: async (id, datosActualizados, imagenes, documentoPdf) => {
     set({ loading: true, error: null });
     try {
       // 1. Procesar todas las fotos en el orden exacto
@@ -146,10 +154,24 @@ export const useVehicleStore = create((set, get) => ({
         }
       }
 
+      const currentVehiculo = get().vehiculos.find(v => v.id === id);
+      let urlDocumento = currentVehiculo?.documento || null;
+
+      if (documentoPdf && documentoPdf.file) {
+        // Se subió un nuevo documento
+        const docRefStorage = ref(storage, `vehiculos/docs/${uuidv4()}_${documentoPdf.file.name}`);
+        await withTimeout(uploadBytes(docRefStorage, documentoPdf.file));
+        urlDocumento = await withTimeout(getDownloadURL(docRefStorage));
+      } else if (documentoPdf === null) {
+        // Se eliminó el documento existente
+        urlDocumento = null;
+      }
+
       // 2. Preparar datos para Firestore
       const vehiculoParaActualizar = {
         ...datosActualizados,
-        fotos: urlsFotos
+        fotos: urlsFotos,
+        documento: urlDocumento
       };
       
       delete vehiculoParaActualizar.fotos_temporales;

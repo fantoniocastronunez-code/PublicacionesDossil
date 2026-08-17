@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useVehicleStore } from '../store/useVehicleStore';
 import VehicleCard from '../components/VehicleCard';
 import { Plus, Search, RefreshCw, CheckSquare, Trash2, X } from 'lucide-react';
+import Swal from 'sweetalert2';
 
 export default function Home() {
   const { vehiculos, fetchVehiculos, loading, deleteMultipleVehiculos } = useVehicleStore();
@@ -20,10 +21,35 @@ export default function Home() {
 
   const handleDeleteSelected = async () => {
     if (selectedIds.length === 0) return;
-    if (window.confirm(`¿Estás seguro que deseas eliminar ${selectedIds.length} vehículos? Esta acción no se puede deshacer.`)) {
+    
+    const result = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: `Estás a punto de eliminar ${selectedIds.length} vehículos. Esta acción no se puede deshacer.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      customClass: {
+        popup: 'rounded-2xl',
+        confirmButton: 'rounded-xl px-4 py-2 font-bold',
+        cancelButton: 'rounded-xl px-4 py-2 font-bold'
+      }
+    });
+
+    if (result.isConfirmed) {
       await deleteMultipleVehiculos(selectedIds);
       setSelectedIds([]);
       setIsSelectionMode(false);
+      Swal.fire({
+        title: 'Eliminados!',
+        text: 'Los vehículos han sido eliminados del inventario.',
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false,
+        customClass: { popup: 'rounded-2xl' }
+      });
     }
   };
 

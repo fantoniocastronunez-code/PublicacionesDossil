@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useVehicleStore } from '../store/useVehicleStore';
-import { CheckCircle2, ChevronRight, UploadCloud, Loader2, ArrowLeft, ArrowRight, Trash2, Star, FileSpreadsheet, Link as LinkIcon } from 'lucide-react';
+import { CheckCircle2, ChevronRight, UploadCloud, Loader2, ArrowLeft, ArrowRight, Trash2, Star, FileSpreadsheet, Link as LinkIcon, FileText } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import Swal from 'sweetalert2';
 import { CATEGORIAS, TIPOS_VEHICULO, MARCAS_MODELOS } from '../data/catalog';
 
 export default function AddVehicle() {
@@ -21,6 +22,7 @@ export default function AddVehicle() {
   });
 
   const [imagenes, setImagenes] = useState([]); // { id, url, file }
+  const [documentoPdf, setDocumentoPdf] = useState(null); // { name, file, url }
 
   useEffect(() => {
     if (id) {
@@ -59,9 +61,32 @@ export default function AddVehicle() {
             file: null
           })));
         }
+
+        if (vehiculoExistente.documento) {
+          setDocumentoPdf({
+            name: 'Documento adjunto',
+            url: vehiculoExistente.documento,
+            file: null
+          });
+        }
       }
     }
   }, [id, vehiculos]);
+
+  const handleDocumentoUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setDocumentoPdf({
+        name: file.name,
+        file: file,
+        url: null
+      });
+    }
+  };
+
+  const eliminarDocumento = () => {
+    setDocumentoPdf(null);
+  };
 
   const handleFichaChange = (e) => {
     const { name, value } = e.target;
@@ -179,12 +204,22 @@ export default function AddVehicle() {
   };
 
   const handleGoogleSheetsLink = async () => {
-    const url = window.prompt("Pega el enlace (URL) de tu Google Sheet público:\n(Debe tener permisos de 'Cualquier persona con el enlace')");
+    const { value: url } = await Swal.fire({
+      title: 'Importar GSheets',
+      input: 'url',
+      inputLabel: 'Enlace de Google Sheets público',
+      inputPlaceholder: 'https://docs.google.com/spreadsheets/...',
+      showCancelButton: true,
+      confirmButtonText: 'Importar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#10b981',
+      customClass: { popup: 'rounded-2xl', confirmButton: 'rounded-xl', cancelButton: 'rounded-xl' }
+    });
     if (!url) return;
 
     const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
     if (!match || !match[1]) {
-      alert("Enlace inválido. Asegúrate de copiar el enlace completo desde Google Sheets.");
+      Swal.fire('Enlace inválido', 'Asegúrate de copiar el enlace completo desde Google Sheets.', 'error');
       return;
     }
     
@@ -205,11 +240,17 @@ export default function AddVehicle() {
       const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
       const count = await procesarJSONExcel(rows);
-      alert(`¡Carga exitosa! Se agregaron ${count} vehículos desde Google Sheets.`);
+      await Swal.fire({
+        title: '¡Carga exitosa!',
+        text: `Se agregaron ${count} vehículos desde Google Sheets.`,
+        icon: 'success',
+        confirmButtonColor: '#10b981',
+        customClass: { popup: 'rounded-2xl' }
+      });
       navigate('/');
 
     } catch (error) {
-      alert("Error al importar desde Google Sheets: " + error.message);
+      Swal.fire('Error', 'Error al importar desde Google Sheets: ' + error.message, 'error');
     } finally {
       setIsUploadingExcel(false);
     }
@@ -228,11 +269,17 @@ export default function AddVehicle() {
       const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
       const count = await procesarJSONExcel(rows);
-      alert(`¡Carga masiva exitosa! Se agregaron ${count} vehículos al inventario.`);
+      await Swal.fire({
+        title: '¡Carga masiva exitosa!',
+        text: `Se agregaron ${count} vehículos al inventario.`,
+        icon: 'success',
+        confirmButtonColor: '#10b981',
+        customClass: { popup: 'rounded-2xl' }
+      });
       navigate('/');
 
     } catch (error) {
-      alert("Error al procesar el Excel: " + error.message);
+      Swal.fire('Error', 'Error al procesar el Excel: ' + error.message, 'error');
     } finally {
       setIsUploadingExcel(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -243,19 +290,24 @@ export default function AddVehicle() {
     e.preventDefault();
     try {
       if (id) {
-        await updateVehiculo(id, formData, imagenes);
+        await updateVehiculo(id, formData, imagenes, documentoPdf);
       } else {
-        await addVehiculo(formData, imagenes);
+        await addVehiculo(formData, imagenes, documentoPdf);
       }
       
       const { error } = useVehicleStore.getState();
       if (error) {
-        alert("Atención: " + error);
-      } else {
-        navigate('/');
+        if (error.message) {
+          Swal.fire('Atención', error.message, 'warning');
+        } else {
+          Swal.fire('Atención', String(error), 'warning');
+        }
+        return; // Detiene la navegación
       }
+      navigate('/');
     } catch (err) {
-      alert("Error inesperado: " + err.message);
+      console.error(err);
+      Swal.fire('Error inesperado', err.message, 'error');
     }
   };
 
@@ -400,6 +452,36 @@ export default function AddVehicle() {
               <div className="col-span-1 sm:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Descripción (Opcional)</label>
                 <textarea name="descripcion" value={formData.comercial.descripcion} onChange={handleComercialChange} rows={4} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors resize-none" placeholder="Detalles, estado general, equipamiento adicional..."></textarea>
+              </div>
+            </div>
+
+            <h2 className="text-xl font-bold mt-10 mb-6 text-gray-800 dark:text-gray-100 border-t border-gray-200 dark:border-gray-700 pt-8">Documento Adjunto</h2>
+            <div className="grid grid-cols-1 gap-6">
+              <div className="col-span-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Autofact / Certificado de Anotaciones Vigentes (PDF, opcional)
+                </label>
+                {!documentoPdf ? (
+                  <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 text-center hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer relative">
+                    <FileText className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                    <p className="text-sm text-gray-600 dark:text-gray-300 font-medium">Haz clic para subir archivo</p>
+                    <p className="text-xs text-gray-400 mt-1">PDF, DOC, DOCX hasta 5MB</p>
+                    <input type="file" accept=".pdf,.doc,.docx" onChange={handleDocumentoUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" title="" />
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <FileText className="w-6 h-6 text-indigo-500" />
+                      <div className="flex flex-col items-start">
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300 max-w-[200px] sm:max-w-xs truncate">{documentoPdf.name}</p>
+                        {documentoPdf.url && <a href={documentoPdf.url} target="_blank" rel="noreferrer" className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline">Ver documento subido</a>}
+                      </div>
+                    </div>
+                    <button type="button" onClick={eliminarDocumento} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="Eliminar documento">
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
