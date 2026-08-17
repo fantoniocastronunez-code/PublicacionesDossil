@@ -440,11 +440,11 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
 
       {/* OFF-SCREEN CARD PARA EXPORTACION (Asegura 600px exactos y estilos correctos) */}
       <div className="fixed top-[-9999px] left-[-9999px] opacity-0 pointer-events-none">
-        <div 
-          ref={cardRef} 
-          className="bg-white dark:bg-gray-800 rounded-[24px] p-8 w-[600px] relative overflow-hidden shadow-none border-none"
-        >
-          <ReportCardContent isExport={true} />
+        {/* Se usa cardRef en este contenedor con clase 'dark' para asegurar que html-to-image renderice los colores oscuros */}
+        <div ref={cardRef} className="dark w-[600px] bg-transparent">
+          <div className="bg-gray-900 rounded-[24px] p-8 w-full relative overflow-hidden shadow-none border border-gray-800">
+            <ReportCardContent isExport={true} />
+          </div>
         </div>
       </div>
     </div>
