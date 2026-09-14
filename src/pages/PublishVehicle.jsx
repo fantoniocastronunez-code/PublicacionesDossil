@@ -171,7 +171,35 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
 
 ☎️ ➕️5️⃣6️⃣9️⃣6️⃣3️⃣6️⃣2️⃣2️⃣8️⃣1️⃣2️⃣`;
 
-  const StatusRow = ({ icon, name, hasLink, color, isCustomIcon = false }) => {
+  const StatusRow = ({ icon, name, hasLink, color, isCustomIcon = false, isExport = false }) => {
+    if (isExport) {
+      return (
+        <div className={`flex items-center justify-between p-5 rounded-[16px] border ${hasLink ? 'bg-[#101f19] border-[#18392a]' : 'bg-[#181c25] border-[#252b36]'}`}>
+          <div className="flex items-center gap-5">
+            <div className="flex justify-center items-center h-10 w-10">
+              {icon}
+            </div>
+            <span className={`font-bold text-lg ${hasLink ? 'text-white' : 'text-gray-400'}`}>
+              {name}
+            </span>
+          </div>
+          <div>
+            {hasLink ? (
+              <div className="flex items-center gap-2 text-[#00d26a] font-bold bg-[#0b291d] border border-[#0d3b28] px-4 py-1.5 rounded-xl">
+                <CheckCircle2 className="w-5 h-5" />
+                <span>Lista</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-gray-500 font-bold bg-[#11141a] border border-[#1f242e] px-4 py-1.5 rounded-xl">
+                <XCircle className="w-5 h-5" />
+                <span>Pendiente</span>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
     const bgColors = {
       blue: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
       yellow: 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400',
@@ -241,49 +269,61 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
 
   const ReportCardContent = ({ isExport = false }) => (
     <>
-      {/* Decoración de fondo */}
-      <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl -mr-10 -mt-10"></div>
-      <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl -ml-10 -mb-10"></div>
+      {isExport ? null : (
+        <>
+          <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl -mr-10 -mt-10"></div>
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl -ml-10 -mb-10"></div>
+        </>
+      )}
       
-      <div className="relative z-10 text-center mb-8">
-        <h3 className={`${isExport ? 'text-3xl' : 'text-2xl'} font-black text-gray-900 dark:text-white tracking-tight`}>Estado de Publicación</h3>
-        <p className={`text-gray-600 dark:text-gray-300 font-bold ${isExport ? 'text-xl' : 'text-lg'} mt-2`}>{titulo}</p>
+      <div className={`relative z-10 text-center ${isExport ? 'mb-10 mt-4' : 'mb-8'}`}>
+        <h3 className={`${isExport ? 'text-4xl text-[#ffffff]' : 'text-2xl text-gray-900 dark:text-white'} font-black tracking-tight`}>
+          Estado de Publicación
+        </h3>
+        <p className={`${isExport ? 'text-[22px] text-[#e0e5eb] mt-5' : 'text-lg text-gray-600 dark:text-gray-300 mt-2'} font-bold`}>
+          {titulo}
+        </p>
       </div>
 
-      <div className="space-y-4 relative z-10 bg-white/50 dark:bg-gray-800/50 p-3 rounded-[20px]">
+      <div className={`relative z-10 ${isExport ? 'space-y-5 px-4' : 'space-y-4 bg-white/50 dark:bg-gray-800/50 p-3 rounded-[20px]'}`}>
         <StatusRow 
-          icon={<img src="/LOGO.gif" alt="Portal Dossil" className="h-8 w-auto object-contain drop-shadow-sm" />} 
+          icon={<img src="/LOGO.gif" alt="Portal Dossil" className="max-h-12 w-auto object-contain" style={{ filter: isExport ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' : '' }} />} 
           name="Portal Dossil" 
           hasLink={!!links.webNativa} 
           color="blue"
           isCustomIcon={true}
+          isExport={isExport}
         />
         <StatusRow 
-          icon={<img src="/Cliente-Logo-Mercado-Libre.png" alt="Mercado Libre" className="h-8 w-auto object-contain drop-shadow-sm" />} 
+          icon={<img src="/Cliente-Logo-Mercado-Libre.png" alt="Mercado Libre" className="max-h-8 w-auto object-contain" style={{ filter: isExport ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' : '' }} />} 
           name="Mercado Libre" 
           hasLink={!!links.mercadoLibre} 
           color="yellow"
           isCustomIcon={true}
+          isExport={isExport}
         />
         <StatusRow 
-          icon={<img src="/autosusados-logo.png" alt="autosusados.cl" className="h-8 w-auto object-contain drop-shadow-sm" />} 
+          icon={<img src="/autosusados-logo.png" alt="autosusados.cl" className="max-h-8 w-auto object-contain" style={{ filter: isExport ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' : '' }} />} 
           name="autosusados.cl" 
           hasLink={!!links.autosUsados} 
           color="red"
           isCustomIcon={true}
+          isExport={isExport}
         />
         <StatusRow 
-          icon={<img src="/marketplace-logo.png" alt="Facebook Marketplace" className="h-8 w-auto object-contain drop-shadow-sm" />} 
+          icon={<img src="/marketplace-logo.png" alt="Facebook Marketplace" className="max-h-8 w-auto object-contain" style={{ filter: isExport ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' : '' }} />} 
           name="Facebook Marketplace" 
           hasLink={!!links.fbMarketplace} 
           color="indigo"
           isCustomIcon={true}
+          isExport={isExport}
         />
       </div>
 
-      <div className="mt-8 text-center border-t border-gray-200 dark:border-gray-700 pt-6 relative z-10">
-        <p className="text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest flex items-center justify-center gap-2">
-          <Store className="w-4 h-4" /> Automotriz Dossil
+      <div className={`mt-10 text-center relative z-10 ${isExport ? '' : 'border-t border-gray-200 dark:border-gray-700 pt-6'}`}>
+        {isExport && <div className="w-full h-px bg-[#262c38] mb-6"></div>}
+        <p className={`font-bold uppercase tracking-widest flex items-center justify-center gap-3 ${isExport ? 'text-[#7a8494] text-base' : 'text-gray-400 dark:text-gray-500 text-sm'}`}>
+          <Store className={isExport ? "w-5 h-5" : "w-4 h-4"} /> Automotriz Dossil
         </p>
       </div>
     </>
@@ -438,13 +478,10 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
         </div>
       </div>
 
-      {/* OFF-SCREEN CARD PARA EXPORTACION (Asegura 600px exactos y estilos correctos) */}
+      {/* OFF-SCREEN CARD PARA EXPORTACION (Asegura dimensiones y fondo exactos) */}
       <div className="fixed top-[-9999px] left-[-9999px] opacity-0 pointer-events-none">
-        {/* Se usa cardRef en este contenedor con clase 'dark' para asegurar que html-to-image renderice los colores oscuros */}
-        <div ref={cardRef} className="dark w-[600px] bg-transparent">
-          <div className="bg-gray-900 rounded-[24px] p-8 w-full relative overflow-hidden shadow-none border border-gray-800">
-            <ReportCardContent isExport={true} />
-          </div>
+        <div ref={cardRef} className="w-[700px] h-[700px] bg-[#111621] rounded-[24px] p-10 flex flex-col justify-center">
+          <ReportCardContent isExport={true} />
         </div>
       </div>
     </div>
