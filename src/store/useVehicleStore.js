@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { db, storage } from '../config/firebase';
 import { collection, getDocs, addDoc, doc, updateDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { v4 as uuidv4 } from 'uuid';
 
 const withTimeout = (promise, ms = 15000) => {
@@ -37,14 +38,14 @@ export const useVehicleStore = create((set, get) => ({
     try {
       const urlsFotos = [];
       let urlDocumento = null;
-      let hasNewFiles = false;
-      const formData = new FormData();
 
       if (imagenes && imagenes.length > 0) {
         for (const img of imagenes) {
           if (img.file) {
-            formData.append('fotos', img.file);
-            hasNewFiles = true;
+            const fileRef = ref(storage, `vehiculos/${uuidv4()}_${img.file.name}`);
+            await uploadBytes(fileRef, img.file);
+            const downloadUrl = await getDownloadURL(fileRef);
+            urlsFotos.push(downloadUrl);
           } else if (img.url) {
             urlsFotos.push(img.url);
           }
@@ -52,19 +53,9 @@ export const useVehicleStore = create((set, get) => ({
       }
 
       if (documentoPdf && documentoPdf.file) {
-        formData.append('documentoPdf', documentoPdf.file);
-        hasNewFiles = true;
-      }
-
-      if (hasNewFiles) {
-        const response = await fetch('http://localhost:3001/upload', {
-          method: 'POST',
-          body: formData
-        });
-        if (!response.ok) throw new Error('Error al subir archivos al servidor local');
-        const data = await response.json();
-        if (data.fotos) urlsFotos.push(...data.fotos);
-        if (data.documento) urlDocumento = data.documento;
+        const docRef = ref(storage, `docs/${uuidv4()}_${documentoPdf.file.name}`);
+        await uploadBytes(docRef, documentoPdf.file);
+        urlDocumento = await getDownloadURL(docRef);
       }
 
       // 2. Guardar datos en Firestore
@@ -149,14 +140,14 @@ export const useVehicleStore = create((set, get) => ({
     set({ loading: true, error: null });
     try {
       const urlsFotos = [];
-      let hasNewFiles = false;
-      const formData = new FormData();
 
       if (imagenes && imagenes.length > 0) {
         for (const img of imagenes) {
           if (img.file) {
-            formData.append('fotos', img.file);
-            hasNewFiles = true;
+            const fileRef = ref(storage, `vehiculos/${uuidv4()}_${img.file.name}`);
+            await uploadBytes(fileRef, img.file);
+            const downloadUrl = await getDownloadURL(fileRef);
+            urlsFotos.push(downloadUrl);
           } else if (img.url) {
             urlsFotos.push(img.url); // Mantiene la URL existente
           }
@@ -167,24 +158,11 @@ export const useVehicleStore = create((set, get) => ({
       let urlDocumento = currentVehiculo?.documento || null;
 
       if (documentoPdf && documentoPdf.file) {
-        formData.append('documentoPdf', documentoPdf.file);
-        hasNewFiles = true;
+        const docRef = ref(storage, `docs/${uuidv4()}_${documentoPdf.file.name}`);
+        await uploadBytes(docRef, documentoPdf.file);
+        urlDocumento = await getDownloadURL(docRef);
       } else if (documentoPdf === null) {
         urlDocumento = null;
-      }
-
-      if (hasNewFiles) {
-        const response = await fetch('http://localhost:3001/upload', {
-          method: 'POST',
-          body: formData
-        });
-        if (!response.ok) throw new Error('Error al subir archivos al servidor local');
-        const data = await response.json();
-        
-        // Las fotos subidas se añaden al final (o según el orden de subida)
-        // Nota: en un caso ideal el backend devuelve las URLs en orden para mapearlas correctamente.
-        if (data.fotos) urlsFotos.push(...data.fotos);
-        if (data.documento) urlDocumento = data.documento;
       }
 
       // 2. Preparar datos para Firestore
