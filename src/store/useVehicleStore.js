@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { db, storage } from '../config/firebase';
 import { collection, getDocs, addDoc, doc, updateDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { v4 as uuidv4 } from 'uuid';
 
 const withTimeout = (promise, ms = 15000) => {
@@ -36,26 +35,36 @@ export const useVehicleStore = create((set, get) => ({
   addVehiculo: async (nuevoVehiculo, imagenes, documentoPdf) => {
     set({ loading: true, error: null });
     try {
-      // 1. Procesar todas las fotos en el orden exacto
       const urlsFotos = [];
+      let urlDocumento = null;
+      let hasNewFiles = false;
+      const formData = new FormData();
+
       if (imagenes && imagenes.length > 0) {
         for (const img of imagenes) {
           if (img.file) {
-            const imageRef = ref(storage, `vehiculos/${uuidv4()}_${img.file.name}`);
-            await withTimeout(uploadBytes(imageRef, img.file));
-            const url = await withTimeout(getDownloadURL(imageRef));
-            urlsFotos.push(url);
-          } else {
-            urlsFotos.push(img.url); // Ya era una URL de Firebase
+            formData.append('fotos', img.file);
+            hasNewFiles = true;
+          } else if (img.url) {
+            urlsFotos.push(img.url);
           }
         }
       }
 
-      let urlDocumento = null;
       if (documentoPdf && documentoPdf.file) {
-        const docRefStorage = ref(storage, `vehiculos/docs/${uuidv4()}_${documentoPdf.file.name}`);
-        await withTimeout(uploadBytes(docRefStorage, documentoPdf.file));
-        urlDocumento = await withTimeout(getDownloadURL(docRefStorage));
+        formData.append('documentoPdf', documentoPdf.file);
+        hasNewFiles = true;
+      }
+
+      if (hasNewFiles) {
+        const response = await fetch('http://localhost:3001/upload', {
+          method: 'POST',
+          body: formData
+        });
+        if (!response.ok) throw new Error('Error al subir archivos al servidor local');
+        const data = await response.json();
+        if (data.fotos) urlsFotos.push(...data.fotos);
+        if (data.documento) urlDocumento = data.documento;
       }
 
       // 2. Guardar datos en Firestore
@@ -139,17 +148,17 @@ export const useVehicleStore = create((set, get) => ({
   updateVehiculo: async (id, datosActualizados, imagenes, documentoPdf) => {
     set({ loading: true, error: null });
     try {
-      // 1. Procesar todas las fotos en el orden exacto
       const urlsFotos = [];
+      let hasNewFiles = false;
+      const formData = new FormData();
+
       if (imagenes && imagenes.length > 0) {
         for (const img of imagenes) {
           if (img.file) {
-            const imageRef = ref(storage, `vehiculos/${uuidv4()}_${img.file.name}`);
-            await withTimeout(uploadBytes(imageRef, img.file));
-            const url = await withTimeout(getDownloadURL(imageRef));
-            urlsFotos.push(url);
-          } else {
-            urlsFotos.push(img.url); // Mantiene la URL existente en ese orden
+            formData.append('fotos', img.file);
+            hasNewFiles = true;
+          } else if (img.url) {
+            urlsFotos.push(img.url); // Mantiene la URL existente
           }
         }
       }
@@ -158,13 +167,24 @@ export const useVehicleStore = create((set, get) => ({
       let urlDocumento = currentVehiculo?.documento || null;
 
       if (documentoPdf && documentoPdf.file) {
-        // Se subió un nuevo documento
-        const docRefStorage = ref(storage, `vehiculos/docs/${uuidv4()}_${documentoPdf.file.name}`);
-        await withTimeout(uploadBytes(docRefStorage, documentoPdf.file));
-        urlDocumento = await withTimeout(getDownloadURL(docRefStorage));
+        formData.append('documentoPdf', documentoPdf.file);
+        hasNewFiles = true;
       } else if (documentoPdf === null) {
-        // Se eliminó el documento existente
         urlDocumento = null;
+      }
+
+      if (hasNewFiles) {
+        const response = await fetch('http://localhost:3001/upload', {
+          method: 'POST',
+          body: formData
+        });
+        if (!response.ok) throw new Error('Error al subir archivos al servidor local');
+        const data = await response.json();
+        
+        // Las fotos subidas se añaden al final (o según el orden de subida)
+        // Nota: en un caso ideal el backend devuelve las URLs en orden para mapearlas correctamente.
+        if (data.fotos) urlsFotos.push(...data.fotos);
+        if (data.documento) urlDocumento = data.documento;
       }
 
       // 2. Preparar datos para Firestore
@@ -189,6 +209,22 @@ export const useVehicleStore = create((set, get) => ({
     } catch (error) {
       console.error("Error al actualizar el vehículo: ", error);
       set({ error: error.message, loading: false });
+    }
+  },
+
+  togglePagoPublicacion: async (id, isPaid) => {
+    set({ error: null }); // Opcional, sin loading global para no bloquear la UI bruscamente
+    try {
+      const vehiculoRef = doc(db, "vehiculos", id);
+      await withTimeout(updateDoc(vehiculoRef, { pagoPublicacion: isPaid }));
+      
+      set(state => ({
+        vehiculos: state.vehiculos.map(v => v.id === id ? { ...v, pagoPublicacion: isPaid } : v)
+      }));
+    } catch (error) {
+      console.error("Error al actualizar estado de pago: ", error);
+      set({ error: error.message });
+      throw error;
     }
   }
 }));

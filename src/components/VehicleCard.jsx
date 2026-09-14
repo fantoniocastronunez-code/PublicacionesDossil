@@ -1,7 +1,23 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CarFront, Calendar, KeyRound, ExternalLink, Globe, Hash, Share2 } from 'lucide-react';
+import { useVehicleStore } from '../store/useVehicleStore';
 
 export default function VehicleCard({ vehiculo, selectable = false, isSelected = false, onSelect = () => {} }) {
+  const { togglePagoPublicacion } = useVehicleStore();
+  const [updatingPago, setUpdatingPago] = useState(false);
+
+  const togglePago = async () => {
+    setUpdatingPago(true);
+    try {
+      await togglePagoPublicacion(vehiculo.id, !vehiculo.pagoPublicacion);
+    } catch(err) {
+      console.error(err);
+    } finally {
+      setUpdatingPago(false);
+    }
+  };
+
   const linksActivos = Object.values(vehiculo.publicaciones || {}).filter(url => url).length;
   const imagenPrincipal = vehiculo.fotos?.[0] || 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&q=80&w=400';
   
@@ -22,17 +38,36 @@ export default function VehicleCard({ vehiculo, selectable = false, isSelected =
         </div>
       )}
 
+      <div className="absolute top-3 right-3 z-10 flex flex-col gap-2 items-end">
+        {linksActivos > 0 && (
+          <div className="bg-indigo-600/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm pointer-events-none">
+            <Globe className="w-3 h-3" /> {linksActivos} Pub.
+          </div>
+        )}
+        <button 
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            togglePago();
+          }}
+          disabled={updatingPago}
+          className={`backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer ${
+            vehiculo.pagoPublicacion 
+              ? 'bg-green-500/90 text-white hover:bg-green-600/90' 
+              : 'bg-red-500/90 text-white hover:bg-red-600/90'
+          }`}
+          title={vehiculo.pagoPublicacion ? 'Marcar como No Pagada' : 'Marcar como Pagada'}
+        >
+          {vehiculo.pagoPublicacion ? 'Pagada' : 'No Pagada'}
+        </button>
+      </div>
+
       <Link to={`/vehiculo/${vehiculo.id}`} className="relative aspect-[4/3] overflow-hidden bg-gray-100 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 block">
         <img 
           src={imagenPrincipal}
           alt={titulo}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
-        {linksActivos > 0 && (
-          <div className="absolute top-3 right-3 bg-indigo-600/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm">
-            <Globe className="w-3 h-3" /> {linksActivos} Pub.
-          </div>
-        )}
       </Link>
 
       <div className="p-5 flex-grow flex flex-col">

@@ -12,6 +12,7 @@ export default function Home() {
   const [selectedIds, setSelectedIds] = useState([]);
   const [sortBy, setSortBy] = useState('fecha');
   const [sortOrder, setSortOrder] = useState('desc');
+  const [filtroPago, setFiltroPago] = useState('todas');
 
   useEffect(() => {
     fetchVehiculos();
@@ -55,13 +56,21 @@ export default function Home() {
     }
   };
 
-  const filteredVehiculos = vehiculos.filter(v => 
-    v.patente.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    v.fichaTecnica?.marca?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    v.fichaTecnica?.modelo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    v.fichaTecnica?.version?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    v.comercial?.tituloPublicacion?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredVehiculos = vehiculos.filter(v => {
+    const matchesSearch = 
+      v.patente.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      v.fichaTecnica?.marca?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      v.fichaTecnica?.modelo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      v.fichaTecnica?.version?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      v.comercial?.tituloPublicacion?.toLowerCase().includes(searchTerm.toLowerCase());
+      
+    const matchesFiltroPago = 
+      filtroPago === 'todas' || 
+      (filtroPago === 'no-pagadas' && !v.pagoPublicacion) ||
+      (filtroPago === 'pagadas' && v.pagoPublicacion);
+      
+    return matchesSearch && matchesFiltroPago;
+  });
 
   const sortedVehiculos = [...filteredVehiculos].sort((a, b) => {
     let comparison = 0;
@@ -111,6 +120,19 @@ export default function Home() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          
+          <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+            <select 
+              value={filtroPago} 
+              onChange={(e) => setFiltroPago(e.target.value)}
+              className="bg-transparent text-sm font-bold text-gray-700 dark:text-gray-300 outline-none cursor-pointer py-1 px-2"
+            >
+              <option value="todas" className="text-gray-900">Todas las Pub.</option>
+              <option value="no-pagadas" className="text-gray-900">No Pagadas</option>
+              <option value="pagadas" className="text-gray-900">Pagadas</option>
+            </select>
+          </div>
+
           <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1 sm:mr-2">
             <div className="flex items-center px-2 text-gray-500 dark:text-gray-400">
               <ArrowDownUp className="w-4 h-4 mr-1" />

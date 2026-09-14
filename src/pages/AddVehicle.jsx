@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useVehicleStore } from '../store/useVehicleStore';
-import { CheckCircle2, ChevronRight, UploadCloud, Loader2, ArrowLeft, ArrowRight, Trash2, Star, FileSpreadsheet, Link as LinkIcon, FileText } from 'lucide-react';
+import { CheckCircle2, ChevronRight, UploadCloud, Loader2, ArrowLeft, ArrowRight, Trash2, Star, FileSpreadsheet, Link as LinkIcon, FileText, FolderOpen } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import Swal from 'sweetalert2';
 import { CATEGORIAS, TIPOS_VEHICULO, MARCAS_MODELOS } from '../data/catalog';
@@ -126,13 +126,14 @@ export default function AddVehicle() {
   };
 
   const handleFotoUpload = (e) => {
-    const files = Array.from(e.target.files);
+    const files = Array.from(e.target.files).filter(file => file.type.startsWith('image/'));
     const nuevasImagenes = files.map(file => ({
       id: `new_${Date.now()}_${Math.random()}`,
       url: URL.createObjectURL(file),
       file
     }));
     setImagenes(prev => [...prev, ...nuevasImagenes]);
+    e.target.value = null;
   };
 
   const moverIzquierda = (index) => {
@@ -491,11 +492,20 @@ export default function AddVehicle() {
           <div className="p-8">
             <h2 className="text-xl font-bold mb-6 text-gray-800 dark:text-gray-100">2. Fotografías</h2>
             
-            <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-10 text-center hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer relative">
-              <UploadCloud className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600 dark:text-gray-300 font-medium">Haz clic o arrastra fotos aquí</p>
-              <p className="text-sm text-gray-400 mt-1">PNG, JPG hasta 5MB</p>
-              <input type="file" multiple accept="image/*" onChange={handleFotoUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" title="" />
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-8 text-center hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer relative">
+                <UploadCloud className="w-10 h-10 text-gray-400 mx-auto mb-2" />
+                <p className="text-gray-600 dark:text-gray-300 font-medium">Fotos Sueltas</p>
+                <p className="text-xs text-gray-400 mt-1">Selecciona uno o más archivos</p>
+                <input type="file" multiple accept="image/*" onChange={handleFotoUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" title="Seleccionar fotos" />
+              </div>
+
+              <div className="flex-1 border-2 border-dashed border-indigo-300 dark:border-indigo-700/50 rounded-xl p-8 text-center hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors cursor-pointer relative bg-indigo-50/30 dark:bg-indigo-900/10">
+                <FolderOpen className="w-10 h-10 text-indigo-400 mx-auto mb-2" />
+                <p className="text-indigo-600 dark:text-indigo-400 font-bold">Seleccionar Carpeta</p>
+                <p className="text-xs text-indigo-400/70 mt-1">Sube todas las fotos de una carpeta</p>
+                <input type="file" webkitdirectory="true" directory="true" multiple accept="image/*" onChange={handleFotoUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" title="Seleccionar carpeta de fotos" />
+              </div>
             </div>
 
             {imagenes.length > 0 && (
