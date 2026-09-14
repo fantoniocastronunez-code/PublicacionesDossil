@@ -23,6 +23,9 @@ export default function AddVehicle() {
 
   const [imagenes, setImagenes] = useState([]); // { id, url, file }
   const [documentoPdf, setDocumentoPdf] = useState(null); // { name, file, url }
+  
+  const dragItem = useRef(null);
+  const dragOverItem = useRef(null);
 
   useEffect(() => {
     if (id) {
@@ -156,6 +159,30 @@ export default function AddVehicle() {
 
   const eliminarFoto = (index) => {
     setImagenes(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleDragStart = (e, position) => {
+    dragItem.current = position;
+  };
+
+  const handleDragEnter = (e, position) => {
+    dragOverItem.current = position;
+  };
+
+  const handleDragEnd = () => {
+    if (dragItem.current === null || dragOverItem.current === null) return;
+    if (dragItem.current === dragOverItem.current) return;
+    
+    setImagenes(prev => {
+      const copy = [...prev];
+      const dragItemContent = copy[dragItem.current];
+      copy.splice(dragItem.current, 1);
+      copy.splice(dragOverItem.current, 0, dragItemContent);
+      return copy;
+    });
+    
+    dragItem.current = null;
+    dragOverItem.current = null;
   };
 
   const procesarJSONExcel = async (rows) => {
@@ -511,11 +538,19 @@ export default function AddVehicle() {
             {imagenes.length > 0 && (
               <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {imagenes.map((img, idx) => (
-                  <div key={img.id} className={`relative aspect-[4/3] rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900 border-2 transition-all group ${idx === 0 ? 'border-indigo-500 shadow-md ring-2 ring-indigo-500/20' : 'border-gray-200 dark:border-gray-700'}`}>
-                    <img src={img.url} alt={`Preview ${idx}`} className="w-full h-full object-cover" />
+                  <div 
+                    key={img.id} 
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, idx)}
+                    onDragEnter={(e) => handleDragEnter(e, idx)}
+                    onDragEnd={handleDragEnd}
+                    onDragOver={(e) => e.preventDefault()}
+                    className={`relative aspect-[4/3] rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900 border-2 transition-all group cursor-move ${idx === 0 ? 'border-indigo-500 shadow-md ring-2 ring-indigo-500/20' : 'border-gray-200 dark:border-gray-700'}`}
+                  >
+                    <img src={img.url} alt={`Preview ${idx}`} className="w-full h-full object-cover pointer-events-none" />
                     
                     {idx === 0 && (
-                      <div className="absolute top-2 left-2 bg-indigo-600 text-white text-xs font-bold px-2 py-1 rounded shadow flex items-center gap-1 z-10">
+                      <div className="absolute top-2 left-2 bg-indigo-600 text-white text-xs font-bold px-2 py-1 rounded shadow flex items-center gap-1 z-10 pointer-events-none">
                         <Star className="w-3 h-3 fill-white" /> Portada
                       </div>
                     )}
