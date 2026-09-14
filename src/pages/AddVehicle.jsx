@@ -501,8 +501,8 @@ export default function AddVehicle() {
                     <div className="flex items-center gap-3">
                       <FileText className="w-6 h-6 text-indigo-500" />
                       <div className="flex flex-col items-start">
-                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300 max-w-[200px] sm:max-w-xs truncate">{documentoPdf.name}</p>
-                        {documentoPdf.url && <a href={documentoPdf.url} target="_blank" rel="noreferrer" className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline">Ver documento subido</a>}
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300 max-w-[200px] sm:max-w-xs truncate">{documentoPdf?.name}</p>
+                        {documentoPdf?.url && <a href={documentoPdf.url} target="_blank" rel="noreferrer" className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline">Ver documento subido</a>}
                       </div>
                     </div>
                     <button type="button" onClick={eliminarDocumento} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="Eliminar documento">
@@ -537,17 +537,19 @@ export default function AddVehicle() {
 
             {imagenes.length > 0 && (
               <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {imagenes.map((img, idx) => (
-                  <div 
-                    key={img.id} 
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, idx)}
-                    onDragEnter={(e) => handleDragEnter(e, idx)}
-                    onDragEnd={handleDragEnd}
-                    onDragOver={(e) => e.preventDefault()}
-                    className={`relative aspect-[4/3] rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900 border-2 transition-all group cursor-move ${idx === 0 ? 'border-indigo-500 shadow-md ring-2 ring-indigo-500/20' : 'border-gray-200 dark:border-gray-700'}`}
-                  >
-                    <img src={img.url} alt={`Preview ${idx}`} className="w-full h-full object-cover pointer-events-none" />
+                {imagenes.map((img, idx) => {
+                  if (!img) return null;
+                  return (
+                    <div 
+                      key={img?.id || idx} 
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, idx)}
+                      onDragEnter={(e) => handleDragEnter(e, idx)}
+                      onDragEnd={handleDragEnd}
+                      onDragOver={(e) => e.preventDefault()}
+                      className={`relative aspect-[4/3] rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900 border-2 transition-all group cursor-move ${idx === 0 ? 'border-indigo-500 shadow-md ring-2 ring-indigo-500/20' : 'border-gray-200 dark:border-gray-700'}`}
+                    >
+                    <img src={img?.url} alt={`Preview ${idx}`} className="w-full h-full object-cover pointer-events-none" />
                     
                     {idx === 0 && (
                       <div className="absolute top-2 left-2 bg-indigo-600 text-white text-xs font-bold px-2 py-1 rounded shadow flex items-center gap-1 z-10 pointer-events-none">
@@ -569,7 +571,8 @@ export default function AddVehicle() {
                       </button>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

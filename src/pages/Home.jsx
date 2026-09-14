@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useVehicleStore } from '../store/useVehicleStore';
 import VehicleCard from '../components/VehicleCard';
-import { Plus, Search, RefreshCw, CheckSquare, Trash2, X, ArrowDownUp, MessageCircle } from 'lucide-react';
+import { Plus, Search, RefreshCw, CheckSquare, Trash2, X, ArrowDownUp, MessageCircle, Store, Camera } from 'lucide-react';
 import Swal from 'sweetalert2';
+import * as htmlToImage from 'html-to-image';
 
 export default function Home() {
   const { vehiculos, fetchVehiculos, loading, deleteMultipleVehiculos } = useVehicleStore();
@@ -13,6 +14,9 @@ export default function Home() {
   const [sortBy, setSortBy] = useState('fecha');
   const [sortOrder, setSortOrder] = useState('desc');
   const [filtroPago, setFiltroPago] = useState('todas');
+  
+  const reporteRef = useRef(null);
+  const [generandoReporte, setGenerandoReporte] = useState(false);
 
   useEffect(() => {
     fetchVehiculos();
@@ -56,22 +60,18 @@ export default function Home() {
     }
   };
 
-  const generarReporteWhatsApp = () => {
+  const generarReporteWhatsApp = async () => {
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
 
     const vehiculosHoy = vehiculos.filter(v => {
-      // Intentar procesar fechaIngreso, puede venir como timestamp de Firestore o string ISO
       let dateValue = v.fechaIngreso;
       if (!dateValue) return false;
-      
-      // Si es un objeto Timestamp de Firebase con toDate()
       if (typeof dateValue.toDate === 'function') {
         dateValue = dateValue.toDate();
       } else {
         dateValue = new Date(dateValue);
       }
-
       const fechaVehiculo = new Date(dateValue);
       fechaVehiculo.setHours(0, 0, 0, 0);
       return fechaVehiculo.getTime() === hoy.getTime();
@@ -82,26 +82,72 @@ export default function Home() {
       return;
     }
 
-    let texto = `*Resumen de Vehículos Publicados Hoy (${new Date().toLocaleDateString()})*\n\n`;
-
-    vehiculosHoy.forEach((v, index) => {
-      const { marca = '', modelo = '', anio = '' } = v.fichaTecnica || {};
-      const { webNativa, mercadoLibre, autosUsados, fbMarketplace } = v.publicaciones || {};
+    if (!reporteRef.current) return;
+    
+    setGenerandoReporte(true);
+    try {
+      const blob = await htmlToImage.toBlob(reporteRef.current, {
+        pixelRatio: 2,
+        backgroundColor: 'transparent',
+        style: {
+          transform: 'scale(1)',
+          transformOrigin: 'top left',
+          margin: '0',
+        }
+      });
       
-      const lugares = [];
-      if (webNativa) lugares.push('Web');
-      if (mercadoLibre) lugares.push('MercadoLibre');
-      if (autosUsados) lugares.push('AutosUsados');
-      if (fbMarketplace) lugares.push('Marketplace');
+      if (blob) {
+        await navigator.clipboard.write([
+          new window.ClipboardItem({ 'image/png': blob })
+        ]);
+        Swal.fire({
+          title: '¡Reporte Copiado!',
+          text: 'La imagen del reporte diario está en tu portapapeles lista para pegar.',
+          icon: 'success',
+          timer: 3000,
+          showConfirmButton: false,
+          customClass: { popup: 'rounded-2xl' }
+        });
+      }
+    } catch (err) {
+      console.error('Error al generar imagen', err);
+      Swal.fire('Error', 'No se pudo generar la imagen.', 'error');
+    } finally {
+      setGenerandoReporte(false);
+    }
+  };
 
-      const lugaresStr = lugares.length > 0 ? lugares.join(', ') : 'Ninguno';
-
-      texto += `${index + 1}. *${marca} ${modelo}* ${anio ? `(${anio})` : ''}\n`;
-      texto += `📍 Lugares: ${lugaresStr}\n\n`;
+  // Obtener los vehiculos de hoy para renderizarlos en el reporte oculto
+  const getVehiculosHoy = () => {
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    return vehiculos.filter(v => {
+      let dateValue = v.fechaIngreso;
+      if (!dateValue) return false;
+      if (typeof dateValue.toDate === 'function') dateValue = dateValue.toDate();
+      else dateValue = new Date(dateValue);
+      const fechaVehiculo = new Date(dateValue);
+      fechaVehiculo.setHours(0, 0, 0, 0);
+      return fechaVehiculo.getTime() === hoy.getTime();
     });
+  };
+  const vehiculosHoyParaReporte = getVehiculosHoy();
 
-    const url = `https://wa.me/?text=${encodeURIComponent(texto)}`;
-    window.open(url, '_blank');
+  const PortalPill = ({ name, active }) => {
+    if (active) {
+      return (
+        <div className="flex items-center gap-2 text-[#00d26a] font-bold bg-[#0b291d] border border-[#0d3b28] px-3 py-1.5 rounded-xl text-sm">
+          <CheckSquare className="w-4 h-4" />
+          <span>{name}</span>
+        </div>
+      );
+    }
+    return (
+      <div className="flex items-center gap-2 text-gray-500 font-bold bg-[#11141a] border border-[#1f242e] px-3 py-1.5 rounded-xl text-sm">
+        <X className="w-4 h-4" />
+        <span>{name}</span>
+      </div>
+    );
   };
 
   const filteredVehiculos = vehiculos.filter(v => {
@@ -225,10 +271,12 @@ export default function Home() {
             <>
               <button 
                 onClick={generarReporteWhatsApp}
-                className="flex items-center gap-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50 px-3 py-2 rounded-lg font-bold transition-colors"
-                title="Generar reporte para WhatsApp de los vehículos ingresados hoy"
+                disabled={generandoReporte}
+                className="flex items-center gap-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50 px-3 py-2 rounded-lg font-bold transition-colors disabled:opacity-50"
+                title="Generar reporte como imagen de los vehículos ingresados hoy"
               >
-                <MessageCircle className="w-4 h-4" /> Reporte Diario
+                {generandoReporte ? <Camera className="w-4 h-4 animate-pulse" /> : <Camera className="w-4 h-4" />} 
+                {generandoReporte ? 'Generando...' : 'Reporte Diario'}
               </button>
               <button 
                 onClick={() => setIsSelectionMode(true)}
@@ -258,6 +306,47 @@ export default function Home() {
           <p className="text-gray-500 dark:text-gray-400 text-lg">No se encontraron vehículos que coincidan con la búsqueda.</p>
         </div>
       )}
+
+      {/* OFF-SCREEN CARD PARA EXPORTACION REPORTE DIARIO */}
+      <div className="fixed top-[-9999px] left-[-9999px] opacity-0 pointer-events-none">
+        <div ref={reporteRef} className="w-[800px] bg-[#111621] rounded-[24px] p-10 flex flex-col justify-center">
+          <div className="text-center mb-10 mt-4">
+            <h3 className="text-4xl text-[#ffffff] font-black tracking-tight">
+              Reporte Diario de Ingresos
+            </h3>
+            <p className="text-[22px] text-[#e0e5eb] mt-5 font-bold capitalize">
+              {new Date().toLocaleDateString('es-CL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            </p>
+          </div>
+
+          <div className="space-y-4 px-4">
+            {vehiculosHoyParaReporte.map((v, index) => {
+              const { marca = '', modelo = '', anio = '' } = v.fichaTecnica || {};
+              const titulo = v.comercial?.tituloPublicacion || `${marca} ${modelo} ${anio}`;
+              const { webNativa, mercadoLibre, autosUsados, fbMarketplace } = v.publicaciones || {};
+              
+              return (
+                <div key={v.id} className="bg-[#181c25] border border-[#252b36] p-6 rounded-[20px]">
+                  <h4 className="text-xl font-bold text-white mb-4">{index + 1}. {titulo}</h4>
+                  <div className="flex flex-wrap gap-3">
+                    <PortalPill name="Portal Dossil" active={!!webNativa} />
+                    <PortalPill name="Mercado Libre" active={!!mercadoLibre} />
+                    <PortalPill name="autosusados.cl" active={!!autosUsados} />
+                    <PortalPill name="Marketplace" active={!!fbMarketplace} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="mt-10 text-center relative z-10">
+            <div className="w-full h-px bg-[#262c38] mb-6"></div>
+            <p className="font-bold uppercase tracking-widest flex items-center justify-center gap-3 text-[#7a8494] text-base">
+              <Store className="w-5 h-5" /> Automotriz Dossil
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
