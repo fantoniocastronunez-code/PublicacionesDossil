@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useVehicleStore } from '../store/useVehicleStore';
 import VehicleCard from '../components/VehicleCard';
-import { Plus, Search, RefreshCw, CheckSquare, Trash2, X, ArrowDownUp } from 'lucide-react';
+import { Plus, Search, RefreshCw, CheckSquare, Trash2, X, ArrowDownUp, MessageCircle } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 export default function Home() {
@@ -54,6 +54,54 @@ export default function Home() {
         customClass: { popup: 'rounded-2xl' }
       });
     }
+  };
+
+  const generarReporteWhatsApp = () => {
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    const vehiculosHoy = vehiculos.filter(v => {
+      // Intentar procesar fechaIngreso, puede venir como timestamp de Firestore o string ISO
+      let dateValue = v.fechaIngreso;
+      if (!dateValue) return false;
+      
+      // Si es un objeto Timestamp de Firebase con toDate()
+      if (typeof dateValue.toDate === 'function') {
+        dateValue = dateValue.toDate();
+      } else {
+        dateValue = new Date(dateValue);
+      }
+
+      const fechaVehiculo = new Date(dateValue);
+      fechaVehiculo.setHours(0, 0, 0, 0);
+      return fechaVehiculo.getTime() === hoy.getTime();
+    });
+
+    if (vehiculosHoy.length === 0) {
+      Swal.fire('Sin publicaciones', 'No se encontraron vehículos agregados el día de hoy.', 'info');
+      return;
+    }
+
+    let texto = `*Resumen de Vehículos Publicados Hoy (${new Date().toLocaleDateString()})*\n\n`;
+
+    vehiculosHoy.forEach((v, index) => {
+      const { marca = '', modelo = '', anio = '' } = v.fichaTecnica || {};
+      const { webNativa, mercadoLibre, autosUsados, fbMarketplace } = v.publicaciones || {};
+      
+      const lugares = [];
+      if (webNativa) lugares.push('Web');
+      if (mercadoLibre) lugares.push('MercadoLibre');
+      if (autosUsados) lugares.push('AutosUsados');
+      if (fbMarketplace) lugares.push('Marketplace');
+
+      const lugaresStr = lugares.length > 0 ? lugares.join(', ') : 'Ninguno';
+
+      texto += `${index + 1}. *${marca} ${modelo}* ${anio ? `(${anio})` : ''}\n`;
+      texto += `📍 Lugares: ${lugaresStr}\n\n`;
+    });
+
+    const url = `https://wa.me/?text=${encodeURIComponent(texto)}`;
+    window.open(url, '_blank');
   };
 
   const filteredVehiculos = vehiculos.filter(v => {
@@ -174,12 +222,21 @@ export default function Home() {
               </button>
             </>
           ) : (
-            <button 
-              onClick={() => setIsSelectionMode(true)}
-              className="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 px-3 py-2 rounded-lg font-bold transition-colors"
-            >
-              <CheckSquare className="w-4 h-4" /> Seleccionar Varios
-            </button>
+            <>
+              <button 
+                onClick={generarReporteWhatsApp}
+                className="flex items-center gap-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50 px-3 py-2 rounded-lg font-bold transition-colors"
+                title="Generar reporte para WhatsApp de los vehículos ingresados hoy"
+              >
+                <MessageCircle className="w-4 h-4" /> Reporte Diario
+              </button>
+              <button 
+                onClick={() => setIsSelectionMode(true)}
+                className="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 px-3 py-2 rounded-lg font-bold transition-colors"
+              >
+                <CheckSquare className="w-4 h-4" /> Seleccionar Varios
+              </button>
+            </>
           )}
         </div>
       </div>
