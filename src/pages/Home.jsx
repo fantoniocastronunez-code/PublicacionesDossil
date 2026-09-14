@@ -88,7 +88,7 @@ export default function Home() {
     try {
       const blob = await htmlToImage.toBlob(reporteRef.current, {
         pixelRatio: 2,
-        backgroundColor: 'transparent',
+        backgroundColor: '#111621',
         style: {
           transform: 'scale(1)',
           transformOrigin: 'top left',
@@ -309,26 +309,26 @@ export default function Home() {
 
       {/* OFF-SCREEN CARD PARA EXPORTACION REPORTE DIARIO */}
       <div className="fixed top-[-9999px] left-[-9999px] opacity-0 pointer-events-none">
-        <div ref={reporteRef} className="w-[800px] bg-[#111621] rounded-[24px] p-10 flex flex-col justify-center">
-          <div className="text-center mb-10 mt-4">
-            <h3 className="text-4xl text-[#ffffff] font-black tracking-tight">
-              Reporte Diario de Ingresos
+        <div ref={reporteRef} className="w-[600px] rounded-[24px] p-6 flex flex-col justify-center" style={{ backgroundColor: '#111621' }}>
+          <div className="text-center mb-6 mt-2">
+            <h3 className="text-3xl text-[#ffffff] font-black tracking-tight">
+              Reporte Diario
             </h3>
-            <p className="text-[22px] text-[#e0e5eb] mt-5 font-bold capitalize">
+            <p className="text-lg text-[#e0e5eb] mt-2 font-bold capitalize">
               {new Date().toLocaleDateString('es-CL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
             </p>
           </div>
 
-          <div className="space-y-4 px-4">
+          <div className="space-y-3 px-2">
             {vehiculosHoyParaReporte.map((v, index) => {
               const { marca = '', modelo = '', anio = '' } = v.fichaTecnica || {};
               const titulo = v.comercial?.tituloPublicacion || `${marca} ${modelo} ${anio}`;
               const { webNativa, mercadoLibre, autosUsados, fbMarketplace } = v.publicaciones || {};
               
               return (
-                <div key={v.id} className="bg-[#181c25] border border-[#252b36] p-6 rounded-[20px]">
-                  <h4 className="text-xl font-bold text-white mb-4">{index + 1}. {titulo}</h4>
-                  <div className="flex flex-wrap gap-3">
+                <div key={v.id} className="border border-[#252b36] p-4 rounded-[16px]" style={{ backgroundColor: '#181c25' }}>
+                  <h4 className="text-lg font-bold text-white mb-3">{index + 1}. {titulo}</h4>
+                  <div className="flex flex-wrap gap-2">
                     <PortalPill name="Portal Dossil" active={!!webNativa} />
                     <PortalPill name="Mercado Libre" active={!!mercadoLibre} />
                     <PortalPill name="autosusados.cl" active={!!autosUsados} />
@@ -339,10 +339,10 @@ export default function Home() {
             })}
           </div>
 
-          <div className="mt-10 text-center relative z-10">
-            <div className="w-full h-px bg-[#262c38] mb-6"></div>
-            <p className="font-bold uppercase tracking-widest flex items-center justify-center gap-3 text-[#7a8494] text-base">
-              <Store className="w-5 h-5" /> Automotriz Dossil
+          <div className="mt-6 text-center relative z-10">
+            <div className="w-full h-px bg-[#262c38] mb-4"></div>
+            <p className="font-bold uppercase tracking-widest flex items-center justify-center gap-2 text-[#7a8494] text-sm">
+              <Store className="w-4 h-4" /> Automotriz Dossil
             </p>
           </div>
         </div>
