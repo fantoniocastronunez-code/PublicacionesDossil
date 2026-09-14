@@ -48,7 +48,7 @@ app.use('/uploads', express.static(uploadsDir));
 // Endpoint para subir archivos
 // Puede recibir múltiples fotos (campo 'fotos') y un documento (campo 'documentoPdf')
 app.post('/upload', upload.fields([
-  { name: 'fotos', maxCount: 20 },
+  { name: 'fotos', maxCount: 100 },
   { name: 'documentoPdf', maxCount: 1 }
 ]), (req, res) => {
   try {
