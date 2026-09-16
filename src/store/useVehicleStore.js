@@ -41,6 +41,8 @@ export const useVehicleStore = create((set, get) => ({
 
       if (imagenes && imagenes.length > 0) {
         for (const img of imagenes) {
+          if (!img) continue; // Previene el error Cannot read properties of undefined
+
           if (img.file) {
             const fileRef = ref(storage, `vehiculos/${uuidv4()}_${img.file.name}`);
             await uploadBytes(fileRef, img.file);
@@ -143,6 +145,8 @@ export const useVehicleStore = create((set, get) => ({
 
       if (imagenes && imagenes.length > 0) {
         for (const img of imagenes) {
+          if (!img) continue; // Previene el error Cannot read properties of undefined
+
           if (img.file) {
             const fileRef = ref(storage, `vehiculos/${uuidv4()}_${img.file.name}`);
             await uploadBytes(fileRef, img.file);
