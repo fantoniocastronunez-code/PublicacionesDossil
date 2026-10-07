@@ -170,10 +170,21 @@ export default function AddVehicle() {
   };
 
   const handleDragEnd = () => {
-    if (dragItem.current === null || dragOverItem.current === null) return;
-    if (dragItem.current === dragOverItem.current) return;
+    if (dragItem.current === null || dragOverItem.current === null) {
+      dragItem.current = null;
+      dragOverItem.current = null;
+      return;
+    }
+    if (dragItem.current === dragOverItem.current) {
+      dragItem.current = null;
+      dragOverItem.current = null;
+      return;
+    }
     
     setImagenes(prev => {
+      if (dragItem.current >= prev.length || dragOverItem.current >= prev.length) {
+        return prev;
+      }
       const copy = [...prev];
       const dragItemContent = copy[dragItem.current];
       copy.splice(dragItem.current, 1);
