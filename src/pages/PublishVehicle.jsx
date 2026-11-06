@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useVehicleStore } from '../store/useVehicleStore';
-import { ArrowLeft, Copy, CheckCircle2, Share2, Save, Globe, ShoppingBag, Car, Store, XCircle, Camera, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Copy, CheckCircle2, Share2, Save, Globe, Store, XCircle, Camera, Image as ImageIcon } from 'lucide-react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import * as htmlToImage from 'html-to-image';
@@ -140,11 +140,12 @@ export default function PublishVehicle() {
     );
   }
 
-  const titulo = vehiculo.comercial?.tituloPublicacion || `${vehiculo.fichaTecnica?.marca} ${vehiculo.fichaTecnica?.modelo}`;
+  const titulo = vehiculo.comercial?.tituloPublicacion || `${vehiculo.fichaTecnica?.marca || ''} ${vehiculo.fichaTecnica?.modelo || ''}`.trim();
   const marca = vehiculo.fichaTecnica?.marca || '';
   const modelo = vehiculo.fichaTecnica?.modelo || '';
   const version = vehiculo.fichaTecnica?.version || '';
   const anio = vehiculo.fichaTecnica?.anio || '';
+  const kilometraje = vehiculo.fichaTecnica?.kilometraje || '';
   const patente = vehiculo.patente || '';
   const vin = vehiculo.fichaTecnica?.vin || '';
   const numeroMotor = vehiculo.fichaTecnica?.numeroMotor || '';
@@ -182,93 +183,58 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
 
   +56 9 6362 2812`;
 
-  const StatusRow = ({ icon, name, hasLink, color, isCustomIcon = false, isExport = false }) => {
-    if (isExport) {
-      return (
-        <div className={`flex items - center justify - between p - 5 rounded - [16px] border ${ hasLink ? 'bg-[#101f19] border-[#18392a]' : 'bg-[#181c25] border-[#252b36]' } `}>
-          <div className="flex items-center gap-5">
-            <div className="flex justify-center items-center h-10 w-10">
-              {icon}
-            </div>
-            <span className={`font - bold text - lg ${ hasLink ? 'text-white' : 'text-gray-400' } `}>
-              {name}
-            </span>
-          </div>
-          <div>
-            {hasLink ? (
-              <div className="flex items-center gap-2 text-[#00d26a] font-bold bg-[#0b291d] border border-[#0d3b28] px-4 py-1.5 rounded-xl">
-                <CheckCircle2 className="w-5 h-5" />
-                <span>Lista</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 text-gray-500 font-bold bg-[#11141a] border border-[#1f242e] px-4 py-1.5 rounded-xl">
-                <XCircle className="w-5 h-5" />
-                <span>Pendiente</span>
-              </div>
-            )}
-          </div>
+  const StatusRow = ({ icon, name, hasLink }) => (
+    <div className={`flex items - center justify - between p - 4 sm: p - 5 rounded - [16px] border ${ hasLink ? 'bg-[#101f19] border-[#18392a]' : 'bg-[#181c25] border-[#252b36]' } `}>
+      <div className="flex items-center gap-4 sm:gap-5">
+        <div className="flex justify-center items-center h-10 w-10">
+          {icon}
         </div>
-      );
-    }
-
-    const bgColors = {
-      blue: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
-      yellow: 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400',
-      red: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400',
-      indigo: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400',
-    };
-    
-    return (
-      <div className={`flex items - center justify - between p - 4 rounded - 2xl border transition - colors ${ hasLink ? 'bg-green-50/50 border-green-200 dark:bg-green-900/20 dark:border-green-900/40' : 'bg-gray-50/50 border-gray-200 dark:bg-gray-800/50 dark:border-gray-700' } `}>
-        <div className="flex items-center gap-4">
-          <div className={`${ isCustomIcon ? '' : `p-3 rounded-xl ${bgColors[color]}` } `}>
-            {icon}
-          </div>
-          <span className={`font - bold ${ hasLink ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400' } `}>
-            {name}
-          </span>
-        </div>
-        <div>
-          {hasLink ? (
-            <div className="flex items-center gap-2 text-green-700 dark:text-green-400 font-bold bg-green-100 dark:bg-green-900/40 px-3 py-1.5 rounded-lg shadow-sm">
-              <CheckCircle2 className="w-5 h-5" />
-              <span className="text-sm">Lista</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 font-bold bg-gray-200 dark:bg-gray-700 px-3 py-1.5 rounded-lg shadow-sm">
-              <XCircle className="w-5 h-5" />
-              <span className="text-sm">Pendiente</span>
-            </div>
-          )}
-        </div>
+        <span className={`font - bold text - base sm: text - lg ${ hasLink ? 'text-white' : 'text-gray-400' } `}>
+          {name}
+        </span>
       </div>
-    );
-  };
+      <div>
+        {hasLink ? (
+          <div className="flex items-center gap-2 text-[#00d26a] font-bold bg-[#0b291d] border border-[#0d3b28] px-4 py-1.5 rounded-xl text-sm sm:text-base">
+            <CheckCircle2 className="w-5 h-5" />
+            <span>Lista</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 text-gray-500 font-bold bg-[#11141a] border border-[#1f242e] px-4 py-1.5 rounded-xl text-sm sm:text-base">
+            <XCircle className="w-5 h-5" />
+            <span>Pendiente</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 
   const CopyField = ({ label, value, fieldId, isTextArea = false, isSmallArea = false }) => (
     <div className="mb-4">
       <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">{label}</label>
-      <div className={`flex gap - 2 ${ isTextArea ? 'flex-col sm:flex-row' : '' } `}>
+      <div className={`flex gap - 2 ${ isTextArea ? 'flex-col sm:flex-row' : 'items-center' } `}>
         {isTextArea ? (
           <textarea 
             readOnly 
             value={value} 
-            className={`flex - 1 w - full rounded - lg bg - gray - 50 dark: bg - gray - 900 border border - gray - 300 dark: border - gray - 600 px - 3 py - 2 text - gray - 900 dark: text - gray - 100 resize - y font - mono text - sm ${ isSmallArea ? 'h-28' : 'min-h-[250px]' } `}
+            className={`flex - 1 min - w - 0 w - full rounded - lg bg - gray - 50 dark: bg - gray - 900 border border - gray - 300 dark: border - gray - 600 px - 3 py - 2 text - gray - 900 dark: text - gray - 100 resize - y font - mono text - sm outline - none focus: ring - 2 focus: ring - indigo - 600 ${ isSmallArea ? 'h-28' : 'min-h-[250px]' } `}
           />
         ) : (
           <input 
             type="text" 
             readOnly 
             value={value} 
-            className="flex-1 min-w-0 w-full rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-900 dark:text-gray-100"
+            className="flex-1 min-w-0 w-full rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-900 dark:text-gray-100 outline-none focus:ring-2 focus:ring-indigo-600"
           />
         )}
         <button 
           onClick={() => handleCopy(value, fieldId)}
-          className={`flex - shrink - 0 px - 4 py - 3 sm: py - 2 rounded - lg font - medium transition - colors flex items - center justify - center gap - 2 ${
+          className={`flex - shrink - 0 px - 4 py - 2.5 rounded - lg font - medium transition - colors flex items - center justify - center gap - 2 cursor - pointer shadow - sm ${
+    isTextArea ? 'sm:self-start' : ''
+  } ${
     copiedField === fieldId
       ? 'bg-green-500 text-white'
-      : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900/50 dark:text-indigo-300'
+      : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900/50 dark:text-indigo-300 dark:hover:bg-indigo-900/80'
   } `}
         >
           {copiedField === fieldId ? <CheckCircle2 className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
@@ -278,63 +244,44 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
     </div>
   );
 
-  const ReportCardContent = ({ isExport = false }) => (
+  const ReportCardContent = () => (
     <>
-      {isExport ? null : (
-        <>
-          <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl -mr-10 -mt-10"></div>
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl -ml-10 -mb-10"></div>
-        </>
-      )}
-      
-      <div className={`relative z - 10 text - center ${ isExport ? 'mb-10 mt-4' : 'mb-8' } `}>
-        <h3 className={`${ isExport ? 'text-4xl text-[#ffffff]' : 'text-2xl text-gray-900 dark:text-white' } font - black tracking - tight`}>
+      <div className="relative z-10 text-center mb-8">
+        <h3 className="text-3xl sm:text-4xl text-[#ffffff] font-black tracking-tight">
           Estado de Publicación
         </h3>
-        <p className={`${ isExport ? 'text-[22px] text-[#e0e5eb] mt-5' : 'text-lg text-gray-600 dark:text-gray-300 mt-2' } font - bold`}>
+        <p className="text-lg sm:text-[22px] text-[#e0e5eb] mt-3 font-bold">
           {titulo}
         </p>
       </div>
 
-      <div className={`relative z - 10 ${ isExport ? 'space-y-5 px-4' : 'space-y-4 bg-white/50 dark:bg-gray-800/50 p-3 rounded-[20px]' } `}>
+      <div className="relative z-10 space-y-4 px-2 sm:px-4">
         <StatusRow 
-          icon={<img src="/LOGO.gif" alt="Portal Dossil" className="max-h-12 w-auto object-contain" style={{ filter: isExport ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' : '' }} />} 
+          icon={<img src="/LOGO.gif" alt="Portal Dossil" className="max-h-12 w-auto object-contain" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }} />} 
           name="Portal Dossil" 
           hasLink={!!links.webNativa} 
-          color="blue"
-          isCustomIcon={true}
-          isExport={isExport}
         />
         <StatusRow 
-          icon={<img src="/Cliente-Logo-Mercado-Libre.png" alt="Mercado Libre" className="max-h-8 w-auto object-contain" style={{ filter: isExport ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' : '' }} />} 
+          icon={<img src="/Cliente-Logo-Mercado-Libre.png" alt="Mercado Libre" className="max-h-8 w-auto object-contain" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }} />} 
           name="Mercado Libre" 
           hasLink={!!links.mercadoLibre} 
-          color="yellow"
-          isCustomIcon={true}
-          isExport={isExport}
         />
         <StatusRow 
-          icon={<img src="/autosusados-logo.png" alt="autosusados.cl" className="max-h-8 w-auto object-contain" style={{ filter: isExport ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' : '' }} />} 
+          icon={<img src="/autosusados-logo.png" alt="autosusados.cl" className="max-h-8 w-auto object-contain" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }} />} 
           name="autosusados.cl" 
           hasLink={!!links.autosUsados} 
-          color="red"
-          isCustomIcon={true}
-          isExport={isExport}
         />
         <StatusRow 
-          icon={<img src="/marketplace-logo.png" alt="Facebook Marketplace" className="max-h-8 w-auto object-contain" style={{ filter: isExport ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' : '' }} />} 
+          icon={<img src="/marketplace-logo.png" alt="Facebook Marketplace" className="max-h-8 w-auto object-contain" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }} />} 
           name="Facebook Marketplace" 
           hasLink={!!links.fbMarketplace} 
-          color="indigo"
-          isCustomIcon={true}
-          isExport={isExport}
         />
       </div>
 
-      <div className={`mt - 10 text - center relative z - 10 ${ isExport ? '' : 'border-t border-gray-200 dark:border-gray-700 pt-6' } `}>
-        {isExport && <div className="w-full h-px bg-[#262c38] mb-6"></div>}
-        <p className={`font - bold uppercase tracking - widest flex items - center justify - center gap - 3 ${ isExport ? 'text-[#7a8494] text-base' : 'text-gray-400 dark:text-gray-500 text-sm' } `}>
-          <Store className={isExport ? "w-5 h-5" : "w-4 h-4"} /> Automotriz Dossil
+      <div className="mt-8 text-center relative z-10 px-2 sm:px-4">
+        <div className="w-full h-px bg-[#262c38] mb-6"></div>
+        <p className="font-bold uppercase tracking-widest flex items-center justify-center gap-3 text-[#7a8494] text-sm sm:text-base">
+          <Store className="w-5 h-5" /> Automotriz Dossil
         </p>
       </div>
     </>
@@ -376,7 +323,11 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <CopyField label="Kilometraje" value={kilometraje} fieldId="kilometraje" />
               <CopyField label="Patente" value={patente} fieldId="patente" />
+            </div>
+
+            <div className="mb-4">
               <CopyField label="VIN" value={vin} fieldId="vin" />
             </div>
 
@@ -419,34 +370,34 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
               <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 <img src="/LOGO.gif" alt="Portal Dossil" className="h-5 w-auto object-contain" /> Portal Dossil
               </label>
-              <input type="url" name="webNativa" value={links.webNativa} onChange={handleLinkChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none" placeholder="https://dossil.cl/..." />
+              <input type="url" name="webNativa" value={links.webNativa} onChange={handleLinkChange} className="w-full rounded-lg bg-transparent border border-gray-300 dark:border-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none" placeholder="https://dossil.cl/..." />
             </div>
             
             <div>
               <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 <img src="/Cliente-Logo-Mercado-Libre.png" alt="Mercado Libre" className="h-5 w-auto object-contain" /> Mercado Libre
               </label>
-              <input type="url" name="mercadoLibre" value={links.mercadoLibre} onChange={handleLinkChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none" placeholder="https://auto.mercadolibre.cl/..." />
+              <input type="url" name="mercadoLibre" value={links.mercadoLibre} onChange={handleLinkChange} className="w-full rounded-lg bg-transparent border border-gray-300 dark:border-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none" placeholder="https://auto.mercadolibre.cl/..." />
             </div>
             
             <div>
               <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 <img src="/autosusados-logo.png" alt="autosusados.cl" className="h-5 w-auto object-contain" /> autosusados.cl
               </label>
-              <input type="url" name="autosUsados" value={links.autosUsados} onChange={handleLinkChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none" placeholder="https://autosusados.cl/..." />
+              <input type="url" name="autosUsados" value={links.autosUsados} onChange={handleLinkChange} className="w-full rounded-lg bg-transparent border border-gray-300 dark:border-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none" placeholder="https://autosusados.cl/..." />
             </div>
             
             <div>
               <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 <img src="/marketplace-logo.png" alt="Facebook Marketplace" className="h-5 w-auto object-contain" /> Facebook Marketplace
               </label>
-              <input type="url" name="fbMarketplace" value={links.fbMarketplace} onChange={handleLinkChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none" placeholder="https://facebook.com/marketplace/..." />
+              <input type="url" name="fbMarketplace" value={links.fbMarketplace} onChange={handleLinkChange} className="w-full rounded-lg bg-transparent border border-gray-300 dark:border-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none" placeholder="https://facebook.com/marketplace/..." />
             </div>
 
             <button 
               onClick={saveLinks}
               disabled={saving}
-              className={`w - full mt - 6 py - 3 px - 4 rounded - xl font - bold flex items - center justify - center gap - 2 transition - all ${
+              className={`w - full mt - 6 py - 3 px - 4 rounded - xl font - bold flex items - center justify - center gap - 2 transition - all cursor - pointer ${
     saved ? 'bg-green-500 text-white' : 'bg-indigo-600 hover:bg-indigo-700 text-white'
   } disabled: opacity - 70`}
             >
@@ -463,7 +414,7 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
 
       </div>
 
-      {/* NUEVA SECCION: TARJETA DE ESTADO (Para copiar como imagen) */}
+      {/* SECCION: REPORTE DE PUBLICACIONES */}
       <div className="mt-12 mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
@@ -483,7 +434,7 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
         </div>
         
         <div className="pb-4">
-          <div className="bg-white dark:bg-gray-800 rounded-[24px] shadow-sm border border-gray-200 dark:border-gray-700 p-6 sm:p-8 w-full max-w-2xl mx-auto relative overflow-hidden">
+          <div className="bg-[#111621] rounded-[24px] shadow-2xl border border-[#252b36] p-6 sm:p-8 w-full max-w-2xl mx-auto relative overflow-hidden">
             <ReportCardContent />
           </div>
         </div>
@@ -492,7 +443,7 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
       {/* OFF-SCREEN CARD PARA EXPORTACION (Asegura dimensiones y fondo exactos) */}
       <div className="fixed top-[-9999px] left-[-9999px] opacity-0 pointer-events-none">
         <div ref={cardRef} className="w-[700px] h-[700px] bg-[#111621] rounded-[24px] p-10 flex flex-col justify-center">
-          <ReportCardContent isExport={true} />
+          <ReportCardContent />
         </div>
       </div>
     </div>
