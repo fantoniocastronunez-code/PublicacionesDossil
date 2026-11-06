@@ -3,6 +3,7 @@ import { db, storage } from '../config/firebase';
 import { collection, getDocs, addDoc, doc, updateDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { v4 as uuidv4 } from 'uuid';
+import { getFechaMillis } from '../utils/dateUtils';
 
 const withTimeout = (promise, ms = 15000) => {
   return Promise.race([
@@ -26,6 +27,7 @@ export const useVehicleStore = create((set, get) => ({
         id: doc.id,
         ...doc.data()
       }));
+      vehiculosData.sort((a, b) => getFechaMillis(b.fechaIngreso) - getFechaMillis(a.fechaIngreso));
       set({ vehiculos: vehiculosData, loading: false });
     } catch (error) {
       console.error("Error al obtener vehículos: ", error);

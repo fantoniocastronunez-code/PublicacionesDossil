@@ -13,7 +13,7 @@ export default function AddVehicle() {
   const [step, setStep] = useState(1);
   const fileInputRef = useRef(null);
   const [isUploadingExcel, setIsUploadingExcel] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     patente: '',
     fichaTecnica: { categoria: 'Liviano', tipoVehiculo: 'Auto (Sedán/Hatchback)', marca: '', modelo: '', version: '', anio: '', vin: '', numeroMotor: '' },
@@ -23,7 +23,7 @@ export default function AddVehicle() {
 
   const [imagenes, setImagenes] = useState([]); // { id, url, file }
   const [documentoPdf, setDocumentoPdf] = useState(null); // { name, file, url }
-  
+
   const dragItem = useRef(null);
   const dragOverItem = useRef(null);
 
@@ -98,10 +98,10 @@ export default function AddVehicle() {
     } else if (name === 'categoria') {
       setFormData(prev => ({
         ...prev,
-        fichaTecnica: { 
-          ...prev.fichaTecnica, 
+        fichaTecnica: {
+          ...prev.fichaTecnica,
           categoria: value,
-          tipoVehiculo: TIPOS_VEHICULO[value]?.[0] || 'Otro' 
+          tipoVehiculo: TIPOS_VEHICULO[value]?.[0] || 'Otro'
         }
       }));
     } else {
@@ -180,7 +180,7 @@ export default function AddVehicle() {
       dragOverItem.current = null;
       return;
     }
-    
+
     setImagenes(prev => {
       if (dragItem.current >= prev.length || dragOverItem.current >= prev.length) {
         return prev;
@@ -191,7 +191,7 @@ export default function AddVehicle() {
       copy.splice(dragOverItem.current, 0, dragItemContent);
       return copy;
     });
-    
+
     dragItem.current = null;
     dragOverItem.current = null;
   };
@@ -261,7 +261,7 @@ export default function AddVehicle() {
       Swal.fire('Enlace inválido', 'Asegúrate de copiar el enlace completo desde Google Sheets.', 'error');
       return;
     }
-    
+
     const spreadsheetId = match[1];
     const exportUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=xlsx`;
 
@@ -271,7 +271,7 @@ export default function AddVehicle() {
       if (!response.ok) {
         throw new Error("No se pudo descargar el archivo. Verifica que tenga permisos de lectura públicos.");
       }
-      
+
       const data = await response.arrayBuffer();
       const workbook = XLSX.read(data, { type: 'array' });
       const sheetName = workbook.SheetNames[0];
@@ -333,7 +333,7 @@ export default function AddVehicle() {
       } else {
         await addVehiculo(formData, imagenes, documentoPdf);
       }
-      
+
       const { error } = useVehicleStore.getState();
       if (error) {
         if (error.message) {
@@ -364,7 +364,7 @@ export default function AddVehicle() {
 
         {!id && (
           <div className="flex flex-col sm:flex-row items-center gap-3">
-            <button 
+            <button
               onClick={handleGoogleSheetsLink}
               disabled={isUploadingExcel || loading}
               className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl font-bold transition-all shadow-sm disabled:opacity-70 w-full sm:w-auto justify-center"
@@ -377,14 +377,14 @@ export default function AddVehicle() {
             </button>
             <span className="text-gray-300 dark:text-gray-600 hidden sm:block">o</span>
             <div>
-              <input 
-                type="file" 
-                accept=".xlsx, .xls" 
-                className="hidden" 
-                ref={fileInputRef} 
-                onChange={handleExcelUpload} 
+              <input
+                type="file"
+                accept=".xlsx, .xls"
+                className="hidden"
+                ref={fileInputRef}
+                onChange={handleExcelUpload}
               />
-              <button 
+              <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploadingExcel || loading}
                 className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold transition-all shadow-sm disabled:opacity-70 w-full sm:w-auto justify-center"
@@ -413,7 +413,7 @@ export default function AddVehicle() {
       </div>
 
       <form onSubmit={step === 3 ? guardarVehiculo : (e) => { e.preventDefault(); setStep(step + 1); }} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden transition-colors">
-        
+
         {step === 1 && (
           <div className="p-8">
             <h2 className="text-xl font-bold mb-6 text-gray-800 dark:text-gray-100">1. Ficha Técnica</h2>
@@ -422,7 +422,7 @@ export default function AddVehicle() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Patente <span className="text-red-500">*</span></label>
                 <input type="text" name="patente" value={formData.patente} onChange={handleFichaChange} required className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="EJ: AB123CD" />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Categoría <span className="text-red-500">*</span></label>
                 <select name="categoria" value={formData.fichaTecnica.categoria} onChange={handleFichaChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors">
@@ -458,177 +458,177 @@ export default function AddVehicle() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Año (Opcional)</label>
                 <input type="number" name="anio" value={formData.fichaTecnica.anio} onChange={handleFichaChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="2024" />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">VIN (Opcional)</label>
-                <input type="text" name="vin" value={formData.fichaTecnica.vin} onChange={handleFichaChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="Número de chasis" />
+                <div className="col-span-1 sm:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">VIN (Opcional)</label>
+                  <input type="text" name="vin" value={formData.fichaTecnica.vin} onChange={handleFichaChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="Número de chasis" />
+                </div>
+                <div className="col-span-1 sm:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Número de Motor (Opcional)</label>
+                  <input type="text" name="numeroMotor" value={formData.fichaTecnica.numeroMotor} onChange={handleFichaChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="Número de motor" />
+                </div>
               </div>
-              <div className="col-span-1 sm:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Número de Motor (Opcional)</label>
-                <input type="text" name="numeroMotor" value={formData.fichaTecnica.numeroMotor} onChange={handleFichaChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="Número de motor" />
-              </div>
-            </div>
 
-            <h2 className="text-xl font-bold mt-10 mb-6 text-gray-800 dark:text-gray-100 border-t border-gray-200 dark:border-gray-700 pt-8">Datos Comerciales</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div className="col-span-1 sm:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Título de la Publicación (Opcional)</label>
-                <input type="text" name="tituloPublicacion" value={formData.comercial.tituloPublicacion} onChange={handleComercialChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="Ej: Toyota Yaris 1.5 GLI AT Excelente Estado" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Precio ($) (Opcional)</label>
-                <input type="number" name="precio" value={formData.comercial.precio} onChange={handleComercialChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="Ej: 12500000" />
-              </div>
-              <div className="flex items-center sm:mt-6">
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <div className="relative">
-                    <input type="checkbox" name="masIva" checked={formData.comercial.masIva} onChange={handleComercialChange} className="sr-only" />
-                    <div className={`block w-14 h-8 rounded-full transition-colors ${formData.comercial.masIva ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-gray-600'}`}></div>
-                    <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${formData.comercial.masIva ? 'transform translate-x-6' : ''}`}></div>
-                  </div>
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Aplica +IVA</span>
-                </label>
-              </div>
-              <div className="col-span-1 sm:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Descripción (Opcional)</label>
-                <textarea name="descripcion" value={formData.comercial.descripcion} onChange={handleComercialChange} rows={4} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors resize-none" placeholder="Detalles, estado general, equipamiento adicional..."></textarea>
-              </div>
-            </div>
-
-            <h2 className="text-xl font-bold mt-10 mb-6 text-gray-800 dark:text-gray-100 border-t border-gray-200 dark:border-gray-700 pt-8">Documento Adjunto</h2>
-            <div className="grid grid-cols-1 gap-6">
-              <div className="col-span-1">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Autofact / Certificado de Anotaciones Vigentes (PDF, opcional)
-                </label>
-                {!documentoPdf ? (
-                  <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 text-center hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer relative">
-                    <FileText className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600 dark:text-gray-300 font-medium">Haz clic para subir archivo</p>
-                    <p className="text-xs text-gray-400 mt-1">PDF, DOC, DOCX hasta 5MB</p>
-                    <input type="file" accept=".pdf,.doc,.docx" onChange={handleDocumentoUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" title="" />
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <FileText className="w-6 h-6 text-indigo-500" />
-                      <div className="flex flex-col items-start">
-                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300 max-w-[200px] sm:max-w-xs truncate">{documentoPdf?.name}</p>
-                        {documentoPdf?.url && <a href={documentoPdf.url} target="_blank" rel="noreferrer" className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline">Ver documento subido</a>}
-                      </div>
+              <h2 className="text-xl font-bold mt-10 mb-6 text-gray-800 dark:text-gray-100 border-t border-gray-200 dark:border-gray-700 pt-8">Datos Comerciales</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="col-span-1 sm:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Título de la Publicación (Opcional)</label>
+                  <input type="text" name="tituloPublicacion" value={formData.comercial.tituloPublicacion} onChange={handleComercialChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="Ej: Toyota Yaris 1.5 GLI AT Excelente Estado" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Precio ($) (Opcional)</label>
+                  <input type="number" name="precio" value={formData.comercial.precio} onChange={handleComercialChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="Ej: 12500000" />
+                </div>
+                <div className="flex items-center sm:mt-6">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <div className="relative">
+                      <input type="checkbox" name="masIva" checked={formData.comercial.masIva} onChange={handleComercialChange} className="sr-only" />
+                      <div className={`block w-14 h-8 rounded-full transition-colors ${formData.comercial.masIva ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-gray-600'}`}></div>
+                      <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${formData.comercial.masIva ? 'transform translate-x-6' : ''}`}></div>
                     </div>
-                    <button type="button" onClick={eliminarDocumento} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="Eliminar documento">
-                      <Trash2 className="w-5 h-5" />
-                    </button>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Aplica +IVA</span>
+                  </label>
+                </div>
+                <div className="col-span-1 sm:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Descripción (Opcional)</label>
+                  <textarea name="descripcion" value={formData.comercial.descripcion} onChange={handleComercialChange} rows={4} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors resize-none" placeholder="Detalles, estado general, equipamiento adicional..."></textarea>
+                </div>
+              </div>
+
+              <h2 className="text-xl font-bold mt-10 mb-6 text-gray-800 dark:text-gray-100 border-t border-gray-200 dark:border-gray-700 pt-8">Documento Adjunto</h2>
+              <div className="grid grid-cols-1 gap-6">
+                <div className="col-span-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Autofact / Certificado de Anotaciones Vigentes (PDF, opcional)
+                  </label>
+                  {!documentoPdf ? (
+                    <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 text-center hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer relative">
+                      <FileText className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                      <p className="text-sm text-gray-600 dark:text-gray-300 font-medium">Haz clic para subir archivo</p>
+                      <p className="text-xs text-gray-400 mt-1">PDF, DOC, DOCX hasta 5MB</p>
+                      <input type="file" accept=".pdf,.doc,.docx" onChange={handleDocumentoUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" title="" />
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <FileText className="w-6 h-6 text-indigo-500" />
+                        <div className="flex flex-col items-start">
+                          <p className="text-sm font-medium text-gray-700 dark:text-gray-300 max-w-[200px] sm:max-w-xs truncate">{documentoPdf?.name}</p>
+                          {documentoPdf?.url && <a href={documentoPdf.url} target="_blank" rel="noreferrer" className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline">Ver documento subido</a>}
+                        </div>
+                      </div>
+                      <button type="button" onClick={eliminarDocumento} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="Eliminar documento">
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+        )}
+
+            {step === 2 && (
+              <div className="p-8">
+                <h2 className="text-xl font-bold mb-6 text-gray-800 dark:text-gray-100">2. Fotografías</h2>
+
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex-1 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-8 text-center hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer relative">
+                    <UploadCloud className="w-10 h-10 text-gray-400 mx-auto mb-2" />
+                    <p className="text-gray-600 dark:text-gray-300 font-medium">Fotos Sueltas</p>
+                    <p className="text-xs text-gray-400 mt-1">Selecciona uno o más archivos</p>
+                    <input type="file" multiple accept="image/*" onChange={handleFotoUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" title="Seleccionar fotos" />
+                  </div>
+
+                  <div className="flex-1 border-2 border-dashed border-indigo-300 dark:border-indigo-700/50 rounded-xl p-8 text-center hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors cursor-pointer relative bg-indigo-50/30 dark:bg-indigo-900/10">
+                    <FolderOpen className="w-10 h-10 text-indigo-400 mx-auto mb-2" />
+                    <p className="text-indigo-600 dark:text-indigo-400 font-bold">Seleccionar Carpeta</p>
+                    <p className="text-xs text-indigo-400/70 mt-1">Sube todas las fotos de una carpeta</p>
+                    <input type="file" webkitdirectory="true" directory="true" multiple accept="image/*" onChange={handleFotoUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" title="Seleccionar carpeta de fotos" />
+                  </div>
+                </div>
+
+                {imagenes.length > 0 && (
+                  <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    {imagenes.map((img, idx) => {
+                      if (!img) return null;
+                      return (
+                        <div
+                          key={img?.id || idx}
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, idx)}
+                          onDragEnter={(e) => handleDragEnter(e, idx)}
+                          onDragEnd={handleDragEnd}
+                          onDragOver={(e) => e.preventDefault()}
+                          className={`relative aspect-[4/3] rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900 border-2 transition-all group cursor-move ${idx === 0 ? 'border-indigo-500 shadow-md ring-2 ring-indigo-500/20' : 'border-gray-200 dark:border-gray-700'}`}
+                        >
+                          <img src={img?.url} alt={`Preview ${idx}`} className="w-full h-full object-cover pointer-events-none" />
+
+                          {idx === 0 && (
+                            <div className="absolute top-2 left-2 bg-indigo-600 text-white text-xs font-bold px-2 py-1 rounded shadow flex items-center gap-1 z-10 pointer-events-none">
+                              <Star className="w-3 h-3 fill-white" /> Portada
+                            </div>
+                          )}
+
+                          <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-2 flex justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="flex gap-1">
+                              <button type="button" onClick={() => moverIzquierda(idx)} disabled={idx === 0} className="p-1.5 bg-white/20 hover:bg-white/40 disabled:opacity-30 rounded backdrop-blur-sm text-white transition-colors" title="Mover a la izquierda">
+                                <ArrowLeft className="w-4 h-4" />
+                              </button>
+                              <button type="button" onClick={() => moverDerecha(idx)} disabled={idx === imagenes.length - 1} className="p-1.5 bg-white/20 hover:bg-white/40 disabled:opacity-30 rounded backdrop-blur-sm text-white transition-colors" title="Mover a la derecha">
+                                <ArrowRight className="w-4 h-4" />
+                              </button>
+                            </div>
+                            <button type="button" onClick={() => eliminarFoto(idx)} className="p-1.5 bg-red-500/80 hover:bg-red-500 text-white rounded backdrop-blur-sm transition-colors" title="Eliminar foto">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
-            </div>
-          </div>
-        )}
+            )}
 
-        {step === 2 && (
-          <div className="p-8">
-            <h2 className="text-xl font-bold mb-6 text-gray-800 dark:text-gray-100">2. Fotografías</h2>
-            
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-8 text-center hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer relative">
-                <UploadCloud className="w-10 h-10 text-gray-400 mx-auto mb-2" />
-                <p className="text-gray-600 dark:text-gray-300 font-medium">Fotos Sueltas</p>
-                <p className="text-xs text-gray-400 mt-1">Selecciona uno o más archivos</p>
-                <input type="file" multiple accept="image/*" onChange={handleFotoUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" title="Seleccionar fotos" />
-              </div>
-
-              <div className="flex-1 border-2 border-dashed border-indigo-300 dark:border-indigo-700/50 rounded-xl p-8 text-center hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors cursor-pointer relative bg-indigo-50/30 dark:bg-indigo-900/10">
-                <FolderOpen className="w-10 h-10 text-indigo-400 mx-auto mb-2" />
-                <p className="text-indigo-600 dark:text-indigo-400 font-bold">Seleccionar Carpeta</p>
-                <p className="text-xs text-indigo-400/70 mt-1">Sube todas las fotos de una carpeta</p>
-                <input type="file" webkitdirectory="true" directory="true" multiple accept="image/*" onChange={handleFotoUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" title="Seleccionar carpeta de fotos" />
-              </div>
-            </div>
-
-            {imagenes.length > 0 && (
-              <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {imagenes.map((img, idx) => {
-                  if (!img) return null;
-                  return (
-                    <div 
-                      key={img?.id || idx} 
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, idx)}
-                      onDragEnter={(e) => handleDragEnter(e, idx)}
-                      onDragEnd={handleDragEnd}
-                      onDragOver={(e) => e.preventDefault()}
-                      className={`relative aspect-[4/3] rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900 border-2 transition-all group cursor-move ${idx === 0 ? 'border-indigo-500 shadow-md ring-2 ring-indigo-500/20' : 'border-gray-200 dark:border-gray-700'}`}
-                    >
-                    <img src={img?.url} alt={`Preview ${idx}`} className="w-full h-full object-cover pointer-events-none" />
-                    
-                    {idx === 0 && (
-                      <div className="absolute top-2 left-2 bg-indigo-600 text-white text-xs font-bold px-2 py-1 rounded shadow flex items-center gap-1 z-10 pointer-events-none">
-                        <Star className="w-3 h-3 fill-white" /> Portada
-                      </div>
-                    )}
-
-                    <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-2 flex justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="flex gap-1">
-                        <button type="button" onClick={() => moverIzquierda(idx)} disabled={idx === 0} className="p-1.5 bg-white/20 hover:bg-white/40 disabled:opacity-30 rounded backdrop-blur-sm text-white transition-colors" title="Mover a la izquierda">
-                          <ArrowLeft className="w-4 h-4" />
-                        </button>
-                        <button type="button" onClick={() => moverDerecha(idx)} disabled={idx === imagenes.length - 1} className="p-1.5 bg-white/20 hover:bg-white/40 disabled:opacity-30 rounded backdrop-blur-sm text-white transition-colors" title="Mover a la derecha">
-                          <ArrowRight className="w-4 h-4" />
-                        </button>
-                      </div>
-                      <button type="button" onClick={() => eliminarFoto(idx)} className="p-1.5 bg-red-500/80 hover:bg-red-500 text-white rounded backdrop-blur-sm transition-colors" title="Eliminar foto">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+            {step === 3 && (
+              <div className="p-8">
+                <h2 className="text-xl font-bold mb-6 text-gray-800 dark:text-gray-100">3. Enlaces de Publicación</h2>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Web Empresa</label>
+                    <input type="url" name="webNativa" value={formData.publicaciones.webNativa} onChange={handleLinksChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="https://" />
                   </div>
-                  );
-                })}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MercadoLibre</label>
+                    <input type="url" name="mercadoLibre" value={formData.publicaciones.mercadoLibre} onChange={handleLinksChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="https://" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Autosusados.cl</label>
+                    <input type="url" name="autosUsados" value={formData.publicaciones.autosUsados} onChange={handleLinksChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="https://" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Facebook Marketplace</label>
+                    <input type="url" name="fbMarketplace" value={formData.publicaciones.fbMarketplace} onChange={handleLinksChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="https://" />
+                  </div>
+                </div>
               </div>
             )}
-          </div>
-        )}
 
-        {step === 3 && (
-          <div className="p-8">
-            <h2 className="text-xl font-bold mb-6 text-gray-800 dark:text-gray-100">3. Enlaces de Publicación</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Web Empresa</label>
-                <input type="url" name="webNativa" value={formData.publicaciones.webNativa} onChange={handleLinksChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="https://" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MercadoLibre</label>
-                <input type="url" name="mercadoLibre" value={formData.publicaciones.mercadoLibre} onChange={handleLinksChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="https://" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Autosusados.cl</label>
-                <input type="url" name="autosUsados" value={formData.publicaciones.autosUsados} onChange={handleLinksChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="https://" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Facebook Marketplace</label>
-                <input type="url" name="fbMarketplace" value={formData.publicaciones.fbMarketplace} onChange={handleLinksChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="https://" />
-              </div>
+            <div className="bg-gray-50 dark:bg-gray-900/50 p-6 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center transition-colors">
+              {step > 1 ? (
+                <button type="button" onClick={() => setStep(step - 1)} disabled={loading} className="px-6 py-2.5 text-gray-600 dark:text-gray-400 font-medium hover:text-gray-900 dark:hover:text-white transition-colors disabled:opacity-50">
+                  Volver
+                </button>
+              ) : <div></div>}
+
+              <button type="submit" disabled={loading} className="bg-indigo-600 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2 disabled:opacity-70">
+                {loading ? (
+                  <><Loader2 className="w-5 h-5 animate-spin" /> Guardando...</>
+                ) : (
+                  <>{step === 3 ? (id ? 'Actualizar Vehículo' : 'Guardar Vehículo') : 'Continuar'} <ChevronRight className="w-5 h-5" /></>
+                )}
+              </button>
             </div>
-          </div>
-        )}
-
-        <div className="bg-gray-50 dark:bg-gray-900/50 p-6 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center transition-colors">
-          {step > 1 ? (
-            <button type="button" onClick={() => setStep(step - 1)} disabled={loading} className="px-6 py-2.5 text-gray-600 dark:text-gray-400 font-medium hover:text-gray-900 dark:hover:text-white transition-colors disabled:opacity-50">
-              Volver
-            </button>
-          ) : <div></div>}
-          
-          <button type="submit" disabled={loading} className="bg-indigo-600 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2 disabled:opacity-70">
-            {loading ? (
-              <><Loader2 className="w-5 h-5 animate-spin" /> Guardando...</>
-            ) : (
-              <>{step === 3 ? (id ? 'Actualizar Vehículo' : 'Guardar Vehículo') : 'Continuar'} <ChevronRight className="w-5 h-5" /></>
-            )}
-          </button>
-        </div>
-      </form>
+          </form>
     </div>
   );
 }

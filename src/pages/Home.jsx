@@ -5,6 +5,7 @@ import VehicleCard from '../components/VehicleCard';
 import { Plus, Search, RefreshCw, CheckSquare, Trash2, X, ArrowDownUp, MessageCircle, Store, Camera } from 'lucide-react';
 import Swal from 'sweetalert2';
 import * as htmlToImage from 'html-to-image';
+import { getFechaMillis } from '../utils/dateUtils';
 
 export default function Home() {
   const { vehiculos, fetchVehiculos, loading, deleteMultipleVehiculos } = useVehicleStore();
@@ -14,7 +15,7 @@ export default function Home() {
   const [sortBy, setSortBy] = useState('fecha');
   const [sortOrder, setSortOrder] = useState('desc');
   const [filtroPago, setFiltroPago] = useState('todas');
-  
+
   const reporteRef = useRef(null);
   const [generandoReporte, setGenerandoReporte] = useState(false);
 
@@ -28,7 +29,7 @@ export default function Home() {
 
   const handleDeleteSelected = async () => {
     if (selectedIds.length === 0) return;
-    
+
     const result = await Swal.fire({
       title: '¿Estás seguro?',
       text: `Estás a punto de eliminar ${selectedIds.length} vehículos. Esta acción no se puede deshacer.`,
@@ -65,14 +66,9 @@ export default function Home() {
     hoy.setHours(0, 0, 0, 0);
 
     const vehiculosHoy = vehiculos.filter(v => {
-      let dateValue = v.fechaIngreso;
-      if (!dateValue) return false;
-      if (typeof dateValue.toDate === 'function') {
-        dateValue = dateValue.toDate();
-      } else {
-        dateValue = new Date(dateValue);
-      }
-      const fechaVehiculo = new Date(dateValue);
+      const millis = getFechaMillis(v.fechaIngreso);
+      if (!millis) return false;
+      const fechaVehiculo = new Date(millis);
       fechaVehiculo.setHours(0, 0, 0, 0);
       return fechaVehiculo.getTime() === hoy.getTime();
     });
@@ -83,7 +79,7 @@ export default function Home() {
     }
 
     if (!reporteRef.current) return;
-    
+
     setGenerandoReporte(true);
     try {
       const blob = await htmlToImage.toBlob(reporteRef.current, {
@@ -95,7 +91,7 @@ export default function Home() {
           margin: '0',
         }
       });
-      
+
       if (blob) {
         await navigator.clipboard.write([
           new window.ClipboardItem({ 'image/png': blob })
@@ -122,11 +118,9 @@ export default function Home() {
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
     return vehiculos.filter(v => {
-      let dateValue = v.fechaIngreso;
-      if (!dateValue) return false;
-      if (typeof dateValue.toDate === 'function') dateValue = dateValue.toDate();
-      else dateValue = new Date(dateValue);
-      const fechaVehiculo = new Date(dateValue);
+      const millis = getFechaMillis(v.fechaIngreso);
+      if (!millis) return false;
+      const fechaVehiculo = new Date(millis);
       fechaVehiculo.setHours(0, 0, 0, 0);
       return fechaVehiculo.getTime() === hoy.getTime();
     });
@@ -151,26 +145,26 @@ export default function Home() {
   };
 
   const filteredVehiculos = vehiculos.filter(v => {
-    const matchesSearch = 
+    const matchesSearch =
       v.patente.toLowerCase().includes(searchTerm.toLowerCase()) ||
       v.fichaTecnica?.marca?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       v.fichaTecnica?.modelo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       v.fichaTecnica?.version?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       v.comercial?.tituloPublicacion?.toLowerCase().includes(searchTerm.toLowerCase());
-      
-    const matchesFiltroPago = 
-      filtroPago === 'todas' || 
+
+    const matchesFiltroPago =
+      filtroPago === 'todas' ||
       (filtroPago === 'no-pagadas' && !v.pagoPublicacion) ||
       (filtroPago === 'pagadas' && v.pagoPublicacion);
-      
+
     return matchesSearch && matchesFiltroPago;
   });
 
   const sortedVehiculos = [...filteredVehiculos].sort((a, b) => {
     let comparison = 0;
     if (sortBy === 'fecha') {
-      const dateA = new Date(a.fechaIngreso || 0).getTime();
-      const dateB = new Date(b.fechaIngreso || 0).getTime();
+      const dateA = getFechaMillis(a.fechaIngreso);
+      const dateB = getFechaMillis(b.fechaIngreso);
       comparison = dateA - dateB;
     } else if (sortBy === 'precio') {
       const priceA = Number(a.comercial?.precio) || 0;
@@ -214,10 +208,10 @@ export default function Home() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          
+
           <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-            <select 
-              value={filtroPago} 
+            <select
+              value={filtroPago}
               onChange={(e) => setFiltroPago(e.target.value)}
               className="bg-transparent text-sm font-bold text-gray-700 dark:text-gray-300 outline-none cursor-pointer py-1 px-2"
             >
@@ -232,8 +226,8 @@ export default function Home() {
               <ArrowDownUp className="w-4 h-4 mr-1" />
               <span className="text-sm font-medium hidden sm:inline">Ordenar:</span>
             </div>
-            <select 
-              value={sortBy} 
+            <select
+              value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
               className="bg-transparent text-sm font-bold text-gray-700 dark:text-gray-300 outline-none cursor-pointer py-1"
             >
@@ -241,7 +235,7 @@ export default function Home() {
               <option value="precio" className="text-gray-900">Precio</option>
               <option value="marca" className="text-gray-900">Marca</option>
             </select>
-            <button 
+            <button
               onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
               className="px-2 py-1 ml-1 text-xs font-bold bg-white dark:bg-gray-700 rounded shadow-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
               title="Cambiar orden ascendente/descendente"
@@ -253,14 +247,14 @@ export default function Home() {
           {isSelectionMode ? (
             <>
               <span className="text-sm font-medium text-gray-500 mr-2">{selectedIds.length} seleccionados</span>
-              <button 
+              <button
                 onClick={handleDeleteSelected}
                 disabled={selectedIds.length === 0 || loading}
                 className="flex items-center gap-1.5 bg-red-100 text-red-600 hover:bg-red-200 px-3 py-2 rounded-lg font-bold transition-colors disabled:opacity-50"
               >
                 <Trash2 className="w-4 h-4" /> Eliminar
               </button>
-              <button 
+              <button
                 onClick={() => { setIsSelectionMode(false); setSelectedIds([]); }}
                 className="flex items-center gap-1.5 bg-gray-100 text-gray-600 hover:bg-gray-200 px-3 py-2 rounded-lg font-bold transition-colors"
               >
@@ -269,16 +263,16 @@ export default function Home() {
             </>
           ) : (
             <>
-              <button 
+              <button
                 onClick={generarReporteWhatsApp}
                 disabled={generandoReporte}
                 className="flex items-center gap-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50 px-3 py-2 rounded-lg font-bold transition-colors disabled:opacity-50"
                 title="Generar reporte como imagen de los vehículos ingresados hoy"
               >
-                {generandoReporte ? <Camera className="w-4 h-4 animate-pulse" /> : <Camera className="w-4 h-4" />} 
+                {generandoReporte ? <Camera className="w-4 h-4 animate-pulse" /> : <Camera className="w-4 h-4" />}
                 {generandoReporte ? 'Generando...' : 'Reporte Diario'}
               </button>
-              <button 
+              <button
                 onClick={() => setIsSelectionMode(true)}
                 className="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 px-3 py-2 rounded-lg font-bold transition-colors"
               >
@@ -292,9 +286,9 @@ export default function Home() {
       {sortedVehiculos.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {sortedVehiculos.map(vehiculo => (
-            <VehicleCard 
-              key={vehiculo.id} 
-              vehiculo={vehiculo} 
+            <VehicleCard
+              key={vehiculo.id}
+              vehiculo={vehiculo}
               selectable={isSelectionMode}
               isSelected={selectedIds.includes(vehiculo.id)}
               onSelect={handleSelect}
@@ -324,7 +318,7 @@ export default function Home() {
               const { marca = '', modelo = '', anio = '' } = v.fichaTecnica || {};
               const titulo = v.comercial?.tituloPublicacion || `${marca} ${modelo} ${anio}`;
               const { webNativa, mercadoLibre, autosUsados, fbMarketplace } = v.publicaciones || {};
-              
+
               return (
                 <div key={v.id} className="border border-[#252b36] p-4 rounded-[16px]" style={{ backgroundColor: '#181c25' }}>
                   <h4 className="text-lg font-bold text-white mb-3">{index + 1}. {titulo}</h4>

@@ -12,7 +12,7 @@ export default function PublishVehicle() {
   const { vehiculos, fetchVehiculos } = useVehicleStore();
   const vehiculo = vehiculos.find(v => v.id === id);
   const [copiedField, setCopiedField] = useState(null);
-  
+
   const cardRef = useRef(null);
   const [copyingImage, setCopyingImage] = useState(false);
 
@@ -50,7 +50,7 @@ export default function PublishVehicle() {
       await fetchVehiculos(); // Refresh store
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
-      
+
       const Toast = Swal.mixin({
         toast: true,
         position: 'top-end',
@@ -148,7 +148,7 @@ export default function PublishVehicle() {
   const patente = vehiculo.patente || '';
   const vin = vehiculo.fichaTecnica?.vin || '';
   const numeroMotor = vehiculo.fichaTecnica?.numeroMotor || '';
-  
+
   const precioBase = Number(vehiculo.comercial?.precio) || 0;
   let iva = 0;
   let total = precioBase;
@@ -157,29 +157,40 @@ export default function PublishVehicle() {
     total = precioBase + iva;
   }
 
+  const cleanEmojis = (str) => {
+    if (!str) return '';
+    return str
+      .replace(/[\p{Extended_Pictographic}\uFE0F\u20E3]/gu, '')
+      .replace(/[ \t]{2,}/g, ' ')
+      .trim();
+  };
+
   let textoDescripcion = "";
   if (vehiculo.comercial?.descripcion) {
-    textoDescripcion += `📝 DETALLES:\n${vehiculo.comercial.descripcion}\n\n=============================\n`;
+    const descSinEmojis = cleanEmojis(vehiculo.comercial.descripcion);
+    if (descSinEmojis) {
+      textoDescripcion += `DETALLES:\n${descSinEmojis}\n\n=============================\n`;
+    }
   }
   textoDescripcion += `SE RECIBEN VEHÍCULOS COMERCIALES EN PARTE DE PAGO.
 CONSULTE POR SUS ALTERNATIVAS DE FINANCIAMIENTO DISPONIBLES!!!
 
 CONTAMOS CON CRÉDITO DIRECTO Y CRÉDITO EXTERNO CON LAS MEJORES ENTIDADES FINANCIERAS TALES COMO AUTOFIN, UNIDAD, GLOBAL, TANNER ENTRE OTRAS Y LAS MEJORES CONDICIONES PARA LA COMPRA DE SU VEHÍCULO.
 
-🏢 NUESTRA SUCURSAL SE ENCUENTRA UBICADA EN AMÉRICO VESPUCIO N° 2900, COMUNA DE MAIPÚ. 
+NUESTRA SUCURSAL SE ENCUENTRA UBICADA EN AMÉRICO VESPUCIO N° 2900, COMUNA DE MAIPÚ. 
 AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
 
-☎️ ➕️5️⃣6️⃣9️⃣6️⃣3️⃣6️⃣2️⃣2️⃣8️⃣1️⃣2️⃣`;
+  +56 9 6362 2812`;
 
   const StatusRow = ({ icon, name, hasLink, color, isCustomIcon = false, isExport = false }) => {
     if (isExport) {
       return (
-        <div className={`flex items-center justify-between p-5 rounded-[16px] border ${hasLink ? 'bg-[#101f19] border-[#18392a]' : 'bg-[#181c25] border-[#252b36]'}`}>
+        <div className={`flex items - center justify - between p - 5 rounded - [16px] border ${ hasLink ? 'bg-[#101f19] border-[#18392a]' : 'bg-[#181c25] border-[#252b36]' } `}>
           <div className="flex items-center gap-5">
             <div className="flex justify-center items-center h-10 w-10">
               {icon}
             </div>
-            <span className={`font-bold text-lg ${hasLink ? 'text-white' : 'text-gray-400'}`}>
+            <span className={`font - bold text - lg ${ hasLink ? 'text-white' : 'text-gray-400' } `}>
               {name}
             </span>
           </div>
@@ -208,12 +219,12 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
     };
     
     return (
-      <div className={`flex items-center justify-between p-4 rounded-2xl border transition-colors ${hasLink ? 'bg-green-50/50 border-green-200 dark:bg-green-900/20 dark:border-green-900/40' : 'bg-gray-50/50 border-gray-200 dark:bg-gray-800/50 dark:border-gray-700'}`}>
+      <div className={`flex items - center justify - between p - 4 rounded - 2xl border transition - colors ${ hasLink ? 'bg-green-50/50 border-green-200 dark:bg-green-900/20 dark:border-green-900/40' : 'bg-gray-50/50 border-gray-200 dark:bg-gray-800/50 dark:border-gray-700' } `}>
         <div className="flex items-center gap-4">
-          <div className={`${isCustomIcon ? '' : `p-3 rounded-xl ${bgColors[color]}`}`}>
+          <div className={`${ isCustomIcon ? '' : `p-3 rounded-xl ${bgColors[color]}` } `}>
             {icon}
           </div>
-          <span className={`font-bold ${hasLink ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
+          <span className={`font - bold ${ hasLink ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400' } `}>
             {name}
           </span>
         </div>
@@ -237,12 +248,12 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
   const CopyField = ({ label, value, fieldId, isTextArea = false, isSmallArea = false }) => (
     <div className="mb-4">
       <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">{label}</label>
-      <div className={`flex gap-2 ${isTextArea ? 'flex-col sm:flex-row' : ''}`}>
+      <div className={`flex gap - 2 ${ isTextArea ? 'flex-col sm:flex-row' : '' } `}>
         {isTextArea ? (
           <textarea 
             readOnly 
             value={value} 
-            className={`flex-1 w-full rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-900 dark:text-gray-100 resize-y font-mono text-sm ${isSmallArea ? 'h-28' : 'min-h-[250px]'}`}
+            className={`flex - 1 w - full rounded - lg bg - gray - 50 dark: bg - gray - 900 border border - gray - 300 dark: border - gray - 600 px - 3 py - 2 text - gray - 900 dark: text - gray - 100 resize - y font - mono text - sm ${ isSmallArea ? 'h-28' : 'min-h-[250px]' } `}
           />
         ) : (
           <input 
@@ -254,11 +265,11 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
         )}
         <button 
           onClick={() => handleCopy(value, fieldId)}
-          className={`flex-shrink-0 px-4 py-3 sm:py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${
-            copiedField === fieldId 
-              ? 'bg-green-500 text-white' 
-              : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900/50 dark:text-indigo-300'
-          }`}
+          className={`flex - shrink - 0 px - 4 py - 3 sm: py - 2 rounded - lg font - medium transition - colors flex items - center justify - center gap - 2 ${
+    copiedField === fieldId
+      ? 'bg-green-500 text-white'
+      : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900/50 dark:text-indigo-300'
+  } `}
         >
           {copiedField === fieldId ? <CheckCircle2 className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
           <span className="inline">{copiedField === fieldId ? 'Copiado' : 'Copiar'}</span>
@@ -276,16 +287,16 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
         </>
       )}
       
-      <div className={`relative z-10 text-center ${isExport ? 'mb-10 mt-4' : 'mb-8'}`}>
-        <h3 className={`${isExport ? 'text-4xl text-[#ffffff]' : 'text-2xl text-gray-900 dark:text-white'} font-black tracking-tight`}>
+      <div className={`relative z - 10 text - center ${ isExport ? 'mb-10 mt-4' : 'mb-8' } `}>
+        <h3 className={`${ isExport ? 'text-4xl text-[#ffffff]' : 'text-2xl text-gray-900 dark:text-white' } font - black tracking - tight`}>
           Estado de Publicación
         </h3>
-        <p className={`${isExport ? 'text-[22px] text-[#e0e5eb] mt-5' : 'text-lg text-gray-600 dark:text-gray-300 mt-2'} font-bold`}>
+        <p className={`${ isExport ? 'text-[22px] text-[#e0e5eb] mt-5' : 'text-lg text-gray-600 dark:text-gray-300 mt-2' } font - bold`}>
           {titulo}
         </p>
       </div>
 
-      <div className={`relative z-10 ${isExport ? 'space-y-5 px-4' : 'space-y-4 bg-white/50 dark:bg-gray-800/50 p-3 rounded-[20px]'}`}>
+      <div className={`relative z - 10 ${ isExport ? 'space-y-5 px-4' : 'space-y-4 bg-white/50 dark:bg-gray-800/50 p-3 rounded-[20px]' } `}>
         <StatusRow 
           icon={<img src="/LOGO.gif" alt="Portal Dossil" className="max-h-12 w-auto object-contain" style={{ filter: isExport ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' : '' }} />} 
           name="Portal Dossil" 
@@ -320,9 +331,9 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
         />
       </div>
 
-      <div className={`mt-10 text-center relative z-10 ${isExport ? '' : 'border-t border-gray-200 dark:border-gray-700 pt-6'}`}>
+      <div className={`mt - 10 text - center relative z - 10 ${ isExport ? '' : 'border-t border-gray-200 dark:border-gray-700 pt-6' } `}>
         {isExport && <div className="w-full h-px bg-[#262c38] mb-6"></div>}
-        <p className={`font-bold uppercase tracking-widest flex items-center justify-center gap-3 ${isExport ? 'text-[#7a8494] text-base' : 'text-gray-400 dark:text-gray-500 text-sm'}`}>
+        <p className={`font - bold uppercase tracking - widest flex items - center justify - center gap - 3 ${ isExport ? 'text-[#7a8494] text-base' : 'text-gray-400 dark:text-gray-500 text-sm' } `}>
           <Store className={isExport ? "w-5 h-5" : "w-4 h-4"} /> Automotriz Dossil
         </p>
       </div>
@@ -332,7 +343,7 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 transition-colors">
       <div className="flex justify-between items-center mb-8">
-        <Link to={`/vehiculo/${id}`} className="inline-flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+        <Link to={`/ vehiculo / ${ id } `} className="inline-flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
           <ArrowLeft className="w-5 h-5" /> Volver a la Ficha
         </Link>
       </div>
@@ -377,7 +388,7 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
               <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-xl mb-4 border border-yellow-200 dark:border-yellow-800/30">
                 <CopyField 
                   label="Vehículo con Factura (+ IVA)" 
-                  value={`VALOR NETO:     ${formatCurrency(precioBase)}\nIVA:            ${formatCurrency(iva)}\nVALOR + IVA:    ${formatCurrency(total)}`} 
+                  value={`VALOR NETO:     ${ formatCurrency(precioBase) } \nIVA:            ${ formatCurrency(iva) } \nVALOR + IVA:    ${ formatCurrency(total) } `} 
                   fieldId="precio_iva" 
                   isTextArea={true} 
                   isSmallArea={true}
@@ -435,9 +446,9 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
             <button 
               onClick={saveLinks}
               disabled={saving}
-              className={`w-full mt-6 py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${
-                saved ? 'bg-green-500 text-white' : 'bg-indigo-600 hover:bg-indigo-700 text-white'
-              } disabled:opacity-70`}
+              className={`w - full mt - 6 py - 3 px - 4 rounded - xl font - bold flex items - center justify - center gap - 2 transition - all ${
+    saved ? 'bg-green-500 text-white' : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+  } disabled: opacity - 70`}
             >
               {saving ? (
                 <span>Guardando...</span>
