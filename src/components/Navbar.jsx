@@ -16,7 +16,7 @@ export default function Navbar() {
             <div className="flex items-center gap-2">
               <span>Dossil Automotriz</span>
               <span className="text-xs bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded-full font-mono font-semibold border border-indigo-200 dark:border-indigo-800">
-                v1.2.0
+                v1.2.1
               </span>
             </div>
           </Link>
