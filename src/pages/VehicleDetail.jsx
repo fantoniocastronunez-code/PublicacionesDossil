@@ -1,12 +1,12 @@
 import { useParams, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { ArrowLeft, CarFront, FileText, Calendar, KeyRound, Globe, ExternalLink, Hash, Loader2, Edit, Share2, Gauge } from 'lucide-react';
+import { ArrowLeft, CarFront, FileText, Calendar, KeyRound, Globe, ExternalLink, Hash, Loader2, Edit, Share2 } from 'lucide-react';
 import { useVehicleStore } from '../store/useVehicleStore';
 
 export default function VehicleDetail() {
   const { id } = useParams();
   const { vehiculos, loading } = useVehicleStore();
-
+  
   const vehiculo = vehiculos.find(v => v.id === id);
   const [imagenSeleccionada, setImagenSeleccionada] = useState(null);
 
@@ -54,21 +54,21 @@ export default function VehicleDetail() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
+        
         {/* Columna Izquierda: Fotos */}
         <div className="lg:col-span-2 space-y-4">
           <div className="aspect-[16/9] rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
-            <img
-              src={imagenSeleccionada || vehiculo.fotos?.[0] || 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&q=80&w=1200'}
-              alt="Vehículo principal"
+            <img 
+              src={imagenSeleccionada || vehiculo.fotos?.[0] || 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&q=80&w=1200'} 
+              alt="Vehículo principal" 
               className="w-full h-full object-cover"
             />
           </div>
           {vehiculo.fotos && vehiculo.fotos.length > 1 && (
             <div className="grid grid-cols-4 sm:grid-cols-5 gap-4">
               {vehiculo.fotos.map((foto, idx) => (
-                <div
-                  key={idx}
+                <div 
+                  key={idx} 
                   onClick={() => setImagenSeleccionada(foto)}
                   className={`aspect-[4/3] rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-900 border-2 transition-all cursor-pointer ${imagenSeleccionada === foto ? 'border-indigo-600 ring-2 ring-indigo-600/20 opacity-100' : 'border-transparent hover:border-indigo-400 opacity-80 hover:opacity-100'}`}
                 >
@@ -85,7 +85,7 @@ export default function VehicleDetail() {
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 leading-tight">
               {titulo}
             </h1>
-
+            
             {precioFormatted && (
               <div className="flex items-end gap-3 mb-4">
                 <span className="text-4xl font-black text-indigo-600 dark:text-indigo-400">{precioFormatted}</span>
@@ -121,29 +121,25 @@ export default function VehicleDetail() {
                   </div>
                 )}
                 <div>
-                  <p className="text-gray-500 dark:text-gray-400 flex items-center gap-1"><CarFront className="w-4 h-4" /> Marca</p>
+                  <p className="text-gray-500 dark:text-gray-400 flex items-center gap-1"><CarFront className="w-4 h-4"/> Marca</p>
                   <p className="font-semibold text-gray-900 dark:text-gray-100">{vehiculo.fichaTecnica?.marca}</p>
                 </div>
                 {vehiculo.fichaTecnica?.version && (
                   <div>
-                    <p className="text-gray-500 dark:text-gray-400 flex items-center gap-1"><CarFront className="w-4 h-4" /> Versión</p>
+                    <p className="text-gray-500 dark:text-gray-400 flex items-center gap-1"><CarFront className="w-4 h-4"/> Versión</p>
                     <p className="font-semibold text-gray-900 dark:text-gray-100">{vehiculo.fichaTecnica.version}</p>
                   </div>
                 )}
                 <div>
-                  <p className="text-gray-500 dark:text-gray-400 flex items-center gap-1"><Calendar className="w-4 h-4" /> Año</p>
+                  <p className="text-gray-500 dark:text-gray-400 flex items-center gap-1"><Calendar className="w-4 h-4"/> Año</p>
                   <p className="font-semibold text-gray-900 dark:text-gray-100">{vehiculo.fichaTecnica?.anio || '-'}</p>
                 </div>
                 <div>
-                  <p className="text-gray-500 dark:text-gray-400 flex items-center gap-1"><Gauge className="w-4 h-4" /> Kilometraje</p>
-                  <p className="font-semibold text-gray-900 dark:text-gray-100">{vehiculo.fichaTecnica?.kilometraje ? `${Number(vehiculo.fichaTecnica.kilometraje).toLocaleString('es-CL')} km` : '-'}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500 dark:text-gray-400 flex items-center gap-1"><Hash className="w-4 h-4" /> VIN</p>
+                  <p className="text-gray-500 dark:text-gray-400 flex items-center gap-1"><Hash className="w-4 h-4"/> VIN</p>
                   <p className="font-semibold text-gray-900 dark:text-gray-100 font-mono text-xs mt-1">{vehiculo.fichaTecnica?.vin || '-'}</p>
                 </div>
                 <div className="col-span-2">
-                  <p className="text-gray-500 dark:text-gray-400 flex items-center gap-1"><KeyRound className="w-4 h-4" /> N° Motor</p>
+                  <p className="text-gray-500 dark:text-gray-400 flex items-center gap-1"><KeyRound className="w-4 h-4"/> N° Motor</p>
                   <p className="font-semibold text-gray-900 dark:text-gray-100 font-mono text-xs mt-1">
                     {vehiculo.fichaTecnica?.numeroMotor || <span className="text-yellow-600 dark:text-yellow-500">Pendiente</span>}
                   </p>
@@ -176,7 +172,7 @@ export default function VehicleDetail() {
                   autosUsados: 'AutosUsados.cl',
                   fbMarketplace: 'FB Marketplace'
                 };
-
+                
                 return url ? (
                   <a key={plataforma} href={url} target="_blank" rel="noreferrer" className="flex items-center justify-between p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 hover:bg-indigo-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:text-indigo-700 dark:hover:text-white transition-colors group">
                     <span className="font-medium">{labels[plataforma]}</span>
