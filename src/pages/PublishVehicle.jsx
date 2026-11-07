@@ -81,37 +81,60 @@ export default function PublishVehicle() {
       const element = cardRef.current;
       const blob = await htmlToImage.toBlob(element, {
         pixelRatio: 2, // Mejor calidad
-        backgroundColor: 'transparent',
+        backgroundColor: '#111621',
         style: {
           transform: 'scale(1)',
           transformOrigin: 'top left',
           margin: '0',
+          backgroundColor: '#111621',
         }
       });
       if (blob) {
-        await navigator.clipboard.write([
-          new window.ClipboardItem({
-            'image/png': blob
-          })
-        ]);
-        const Toast = Swal.mixin({
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          timer: 4000,
-          timerProgressBar: true
-        });
-        Toast.fire({
-          icon: 'success',
-          title: '¡Imagen copiada!',
-          text: 'Puedes pegarla en cualquier chat.'
-        });
+        try {
+          await navigator.clipboard.write([
+            new window.ClipboardItem({
+              'image/png': blob
+            })
+          ]);
+          const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 4000,
+            timerProgressBar: true
+          });
+          Toast.fire({
+            icon: 'success',
+            title: '¡Imagen copiada!',
+            text: 'Puedes pegarla en cualquier chat.'
+          });
+        } catch (clipErr) {
+          const file = new File([blob], `reporte-${patente || 'vehiculo'}.png`, { type: 'image/png' });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: 'Estado de Publicación',
+              text: titulo
+            });
+          } else {
+            const link = document.createElement('a');
+            link.download = `reporte-${patente || 'vehiculo'}.png`;
+            link.href = URL.createObjectURL(blob);
+            link.click();
+            URL.revokeObjectURL(link.href);
+            Swal.fire({
+              icon: 'success',
+              title: '¡Imagen descargada!',
+              text: 'Se ha descargado la imagen del reporte.'
+            });
+          }
+        }
       }
     } catch (err) {
-      console.error('Error al copiar la imagen', err);
+      console.error('Error al generar la imagen', err);
       Swal.fire({
-        title: 'Error al copiar',
-        text: 'No se pudo copiar la imagen automáticamente, por favor toma una captura de pantalla normal.',
+        title: 'Error al generar imagen',
+        text: 'No se pudo generar la imagen automáticamente.',
         icon: 'error',
         confirmButtonColor: '#4f46e5'
       });
@@ -174,23 +197,35 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
   const StatusRow = ({ icon, name, hasLink, color, isCustomIcon = false, isExport = false }) => {
     if (isExport) {
       return (
-        <div className={`flex items-center justify-between p-5 rounded-[16px] border ${hasLink ? 'bg-[#101f19] border-[#18392a]' : 'bg-[#181c25] border-[#252b36]'}`}>
+        <div 
+          className={`flex items-center justify-between p-5 rounded-[16px] border ${hasLink ? 'border-[#18392a]' : 'border-[#252b36]'}`}
+          style={{ backgroundColor: hasLink ? '#101f19' : '#181c25' }}
+        >
           <div className="flex items-center gap-5">
             <div className="flex justify-center items-center h-10 w-10">
               {icon}
             </div>
-            <span className={`font-bold text-lg ${hasLink ? 'text-white' : 'text-gray-400'}`}>
+            <span 
+              className={`font-bold text-lg ${hasLink ? 'text-white' : 'text-gray-400'}`}
+              style={{ color: hasLink ? '#ffffff' : '#9ca3af' }}
+            >
               {name}
             </span>
           </div>
           <div>
             {hasLink ? (
-              <div className="flex items-center gap-2 text-[#00d26a] font-bold bg-[#0b291d] border border-[#0d3b28] px-4 py-1.5 rounded-xl">
+              <div 
+                className="flex items-center gap-2 text-[#00d26a] font-bold border border-[#0d3b28] px-4 py-1.5 rounded-xl"
+                style={{ backgroundColor: '#0b291d', color: '#00d26a' }}
+              >
                 <CheckCircle2 className="w-5 h-5" />
                 <span>Lista</span>
               </div>
             ) : (
-              <div className="flex items-center gap-2 text-gray-500 font-bold bg-[#11141a] border border-[#1f242e] px-4 py-1.5 rounded-xl">
+              <div 
+                className="flex items-center gap-2 text-gray-500 font-bold border border-[#1f242e] px-4 py-1.5 rounded-xl"
+                style={{ backgroundColor: '#11141a', color: '#6b7280' }}
+              >
                 <XCircle className="w-5 h-5" />
                 <span>Pendiente</span>
               </div>
@@ -277,10 +312,16 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
       )}
       
       <div className={`relative z-10 text-center ${isExport ? 'mb-10 mt-4' : 'mb-8'}`}>
-        <h3 className={`${isExport ? 'text-4xl text-[#ffffff]' : 'text-2xl text-gray-900 dark:text-white'} font-black tracking-tight`}>
+        <h3 
+          className={`${isExport ? 'text-4xl text-[#ffffff]' : 'text-2xl text-gray-900 dark:text-white'} font-black tracking-tight`}
+          style={isExport ? { color: '#ffffff' } : undefined}
+        >
           Estado de Publicación
         </h3>
-        <p className={`${isExport ? 'text-[22px] text-[#e0e5eb] mt-5' : 'text-lg text-gray-600 dark:text-gray-300 mt-2'} font-bold`}>
+        <p 
+          className={`${isExport ? 'text-[22px] text-[#e0e5eb] mt-5' : 'text-lg text-gray-600 dark:text-gray-300 mt-2'} font-bold`}
+          style={isExport ? { color: '#e0e5eb' } : undefined}
+        >
           {titulo}
         </p>
       </div>
@@ -321,8 +362,11 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
       </div>
 
       <div className={`mt-10 text-center relative z-10 ${isExport ? '' : 'border-t border-gray-200 dark:border-gray-700 pt-6'}`}>
-        {isExport && <div className="w-full h-px bg-[#262c38] mb-6"></div>}
-        <p className={`font-bold uppercase tracking-widest flex items-center justify-center gap-3 ${isExport ? 'text-[#7a8494] text-base' : 'text-gray-400 dark:text-gray-500 text-sm'}`}>
+        {isExport && <div className="w-full h-px bg-[#262c38] mb-6" style={{ backgroundColor: '#262c38' }}></div>}
+        <p 
+          className={`font-bold uppercase tracking-widest flex items-center justify-center gap-3 ${isExport ? 'text-[#7a8494] text-base' : 'text-gray-400 dark:text-gray-500 text-sm'}`}
+          style={isExport ? { color: '#7a8494' } : undefined}
+        >
           <Store className={isExport ? "w-5 h-5" : "w-4 h-4"} /> Automotriz Dossil
         </p>
       </div>
@@ -479,8 +523,12 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
       </div>
 
       {/* OFF-SCREEN CARD PARA EXPORTACION (Asegura dimensiones y fondo exactos) */}
-      <div className="fixed top-[-9999px] left-[-9999px] opacity-0 pointer-events-none">
-        <div ref={cardRef} className="w-[700px] h-[700px] bg-[#111621] rounded-[24px] p-10 flex flex-col justify-center">
+      <div className="fixed top-[-9999px] left-[-9999px] pointer-events-none" style={{ zIndex: -100 }}>
+        <div 
+          ref={cardRef} 
+          className="w-[700px] h-[700px] rounded-[24px] p-10 flex flex-col justify-center relative overflow-hidden"
+          style={{ backgroundColor: '#111621', color: '#ffffff' }}
+        >
           <ReportCardContent isExport={true} />
         </div>
       </div>
