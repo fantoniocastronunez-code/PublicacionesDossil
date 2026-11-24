@@ -269,38 +269,75 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
     );
   };
 
-  const CopyField = ({ label, value, fieldId, isTextArea = false, isSmallArea = false }) => (
-    <div className="mb-4">
-      <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">{label}</label>
-      <div className={`flex gap-2 ${isTextArea ? 'flex-col sm:flex-row' : ''}`}>
-        {isTextArea ? (
-          <textarea 
-            readOnly 
-            value={value} 
-            className={`flex-1 w-full rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-900 dark:text-gray-100 resize-y font-mono text-sm ${isSmallArea ? 'h-28' : 'min-h-[250px]'}`}
-          />
-        ) : (
+  const CopyField = ({ label, value, fieldId, isTextArea = false, isSmallArea = false }) => {
+    const isCopied = copiedField === fieldId;
+
+    if (isTextArea) {
+      return (
+        <div className="mb-5">
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300">
+              {label}
+            </label>
+            <button
+              type="button"
+              onClick={() => handleCopy(value, fieldId)}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer shadow-sm ${
+                isCopied
+                  ? 'bg-emerald-600 text-white shadow-emerald-500/20'
+                  : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:hover:bg-indigo-900 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/80 active:scale-95'
+              }`}
+            >
+              {isCopied ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+              <span>{isCopied ? '¡Copiado!' : 'Copiar Texto'}</span>
+            </button>
+          </div>
+          <div className="relative group">
+            <textarea 
+              readOnly 
+              value={value || ''} 
+              className={`w-full rounded-xl bg-gray-50/80 dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700/80 p-3.5 text-gray-900 dark:text-gray-100 font-mono text-xs sm:text-sm leading-relaxed resize-y focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all ${
+                isSmallArea ? 'h-28' : 'min-h-[230px]'
+              }`}
+            />
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="mb-4">
+        <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300 mb-1.5">
+          {label}
+        </label>
+        <div className="relative flex items-center group">
           <input 
             type="text" 
             readOnly 
-            value={value} 
-            className="flex-1 min-w-0 w-full rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-900 dark:text-gray-100"
+            value={value || ''} 
+            onClick={() => handleCopy(value, fieldId)}
+            className="w-full rounded-xl bg-gray-50/80 dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700/80 pl-3.5 pr-24 py-2.5 text-sm text-gray-900 dark:text-gray-100 font-medium tracking-tight truncate focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 hover:border-gray-300 dark:hover:border-gray-600 transition-all cursor-pointer"
+            title="Clic para copiar"
           />
-        )}
-        <button 
-          onClick={() => handleCopy(value, fieldId)}
-          className={`flex-shrink-0 px-4 py-3 sm:py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${
-            copiedField === fieldId 
-              ? 'bg-green-500 text-white' 
-              : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900/50 dark:text-indigo-300'
-          }`}
-        >
-          {copiedField === fieldId ? <CheckCircle2 className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
-          <span className="inline">{copiedField === fieldId ? 'Copiado' : 'Copiar'}</span>
-        </button>
+          <button 
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleCopy(value, fieldId);
+            }}
+            className={`absolute right-1.5 top-1/2 -translate-y-1/2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer shadow-sm ${
+              isCopied 
+                ? 'bg-emerald-600 text-white shadow-emerald-500/20' 
+                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-950/60 dark:hover:text-indigo-300 border border-gray-200 dark:border-gray-700 hover:border-indigo-200 dark:hover:border-indigo-800/60 active:scale-95'
+            }`}
+          >
+            {isCopied ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+            <span>{isCopied ? 'Copiado' : 'Copiar'}</span>
+          </button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const ReportCardContent = ({ isExport = false }) => (
     <>
