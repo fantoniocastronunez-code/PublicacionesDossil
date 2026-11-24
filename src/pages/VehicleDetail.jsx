@@ -1,6 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { ArrowLeft, CarFront, FileText, Calendar, KeyRound, Globe, ExternalLink, Hash, Loader2, Edit, Share2 } from 'lucide-react';
+import { ArrowLeft, CarFront, FileText, Calendar, KeyRound, Globe, ExternalLink, Hash, Loader2, Edit, Share2, Gauge } from 'lucide-react';
 import { useVehicleStore } from '../store/useVehicleStore';
 
 export default function VehicleDetail() {
@@ -133,6 +133,10 @@ export default function VehicleDetail() {
                 <div>
                   <p className="text-gray-500 dark:text-gray-400 flex items-center gap-1"><Calendar className="w-4 h-4"/> Año</p>
                   <p className="font-semibold text-gray-900 dark:text-gray-100">{vehiculo.fichaTecnica?.anio || '-'}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500 dark:text-gray-400 flex items-center gap-1"><Gauge className="w-4 h-4"/> Kilometraje</p>
+                  <p className="font-semibold text-gray-900 dark:text-gray-100">{vehiculo.fichaTecnica?.kilometraje ? `${Number(vehiculo.fichaTecnica.kilometraje).toLocaleString('es-CL')} km` : '-'}</p>
                 </div>
                 <div>
                   <p className="text-gray-500 dark:text-gray-400 flex items-center gap-1"><Hash className="w-4 h-4"/> VIN</p>

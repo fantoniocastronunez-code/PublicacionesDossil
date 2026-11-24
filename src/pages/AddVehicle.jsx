@@ -16,7 +16,7 @@ export default function AddVehicle() {
 
   const [formData, setFormData] = useState({
     patente: '',
-    fichaTecnica: { categoria: 'Liviano', tipoVehiculo: 'Auto (Sedán/Hatchback)', marca: '', modelo: '', version: '', anio: '', vin: '', numeroMotor: '' },
+    fichaTecnica: { categoria: 'Liviano', tipoVehiculo: 'Auto (Sedán/Hatchback)', marca: '', modelo: '', version: '', anio: '', kilometraje: '', vin: '', numeroMotor: '' },
     comercial: { tituloPublicacion: '', descripcion: '', precio: '', masIva: false },
     publicaciones: { webNativa: '', mercadoLibre: '', autosUsados: '', fbMarketplace: '' }
   });
@@ -40,6 +40,7 @@ export default function AddVehicle() {
             modelo: vehiculoExistente.fichaTecnica?.modelo || '',
             version: vehiculoExistente.fichaTecnica?.version || '',
             anio: vehiculoExistente.fichaTecnica?.anio || '',
+            kilometraje: vehiculoExistente.fichaTecnica?.kilometraje || '',
             vin: vehiculoExistente.fichaTecnica?.vin || '',
             numeroMotor: vehiculoExistente.fichaTecnica?.numeroMotor || ''
           },
@@ -216,6 +217,7 @@ export default function AddVehicle() {
           modelo: String(row[1] || '').trim(),
           version: String(row[5] || '').trim(),
           anio: String(row[2] || '').trim(),
+          kilometraje: String(row[13] || '').trim(),
           vin: String(row[11] || '').trim(),
           numeroMotor: String(row[12] || '').trim()
         },
@@ -458,14 +460,18 @@ export default function AddVehicle() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Año (Opcional)</label>
                 <input type="number" name="anio" value={formData.fichaTecnica.anio} onChange={handleFichaChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="2024" />
               </div>
-                <div className="col-span-1 sm:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">VIN (Opcional)</label>
-                  <input type="text" name="vin" value={formData.fichaTecnica.vin} onChange={handleFichaChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="Número de chasis" />
-                </div>
-                <div className="col-span-1 sm:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Número de Motor (Opcional)</label>
-                  <input type="text" name="numeroMotor" value={formData.fichaTecnica.numeroMotor} onChange={handleFichaChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="Número de motor" />
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kilometraje (Opcional)</label>
+                <input type="number" name="kilometraje" value={formData.fichaTecnica.kilometraje || ''} onChange={handleFichaChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="Ej: 85000" />
+              </div>
+              <div className="col-span-1 sm:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">VIN (Opcional)</label>
+                <input type="text" name="vin" value={formData.fichaTecnica.vin} onChange={handleFichaChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="Número de chasis" />
+              </div>
+              <div className="col-span-1 sm:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Número de Motor (Opcional)</label>
+                <input type="text" name="numeroMotor" value={formData.fichaTecnica.numeroMotor} onChange={handleFichaChange} className="w-full rounded-lg bg-transparent border-gray-300 dark:border-gray-600 ring-1 ring-gray-300 dark:ring-gray-600 px-4 py-2 focus:ring-2 focus:ring-indigo-600 dark:text-white outline-none transition-colors" placeholder="Número de motor" />
+              </div>
               </div>
 
               <h2 className="text-xl font-bold mt-10 mb-6 text-gray-800 dark:text-gray-100 border-t border-gray-200 dark:border-gray-700 pt-8">Datos Comerciales</h2>

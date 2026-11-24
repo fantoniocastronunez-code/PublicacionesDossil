@@ -168,6 +168,7 @@ export default function PublishVehicle() {
   const modelo = vehiculo.fichaTecnica?.modelo || '';
   const version = vehiculo.fichaTecnica?.version || '';
   const anio = vehiculo.fichaTecnica?.anio || '';
+  const kilometraje = vehiculo.fichaTecnica?.kilometraje || '';
   const patente = vehiculo.patente || '';
   const vin = vehiculo.fichaTecnica?.vin || '';
   const numeroMotor = vehiculo.fichaTecnica?.numeroMotor || '';
@@ -440,18 +441,20 @@ AUTOMOTRIZ DOSSIL, LÍDER EN VEHÍCULOS DE TRABAJO!!
               <CopyField label="Modelo" value={modelo} fieldId="modelo" />
             </div>
             
+            <CopyField label="Versión" value={version} fieldId="version" />
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <CopyField label="Versión" value={version} fieldId="version" />
               <CopyField label="Año" value={anio} fieldId="anio" />
+              <CopyField label="Kilometraje" value={kilometraje} fieldId="kilometraje" />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <CopyField label="Patente" value={patente} fieldId="patente" />
-              <CopyField label="VIN" value={vin} fieldId="vin" />
+              <CopyField label="Número de Motor" value={numeroMotor} fieldId="numeroMotor" />
             </div>
 
             <div className="mb-4">
-              <CopyField label="Número de Motor" value={numeroMotor} fieldId="numeroMotor" />
+              <CopyField label="VIN" value={vin} fieldId="vin" />
             </div>
 
             {vehiculo.comercial?.masIva ? (
